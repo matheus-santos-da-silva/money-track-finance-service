@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id         String       @id @default(uuid())
+  user_id    String?
+  type       CategoryType
+  name       String
+  icon       String?
+  Expense    Expense[]
+  Income     Income[]
+  created_at DateTime     @default(now())
+
+  @@map("categories")
+}
+
+model Expense {
+  id                 String     @id @default(uuid())
+  user_id            String
+  category_id        String
+  category           Category   @relation(fields: [category_id], references: [id])
+  amount             Decimal
+  description        String?
+  recurrence         Recurrence @default(NONE)
+  total_installments Int        @default(1)
+  expense_date       DateTime   @default(now())
+  created_at         DateTime   @default(now())
+
+  @@map("expenses")
+}
+
+model Income {
+  id                 String     @id @default(uuid())
+  user_id            String
+  category_id        String
+  category           Category   @relation(fields: [category_id], references: [id])
+  amount             Decimal
+  description        String?
+  recurrence         Recurrence @default(NONE)
+  total_installments Int        @default(1)
+  income_date        DateTime   @default(now())
+  created_at         DateTime   @default(now())
+
+  @@map("incomes")
+}
+
+enum Recurrence {
+  NONE
+  MONTHLY
+  YEARLY
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
