@@ -29,7 +29,7 @@ model Expense {
   description        String?
   recurrence         Recurrence @default(NONE)
   total_installments Int        @default(1)
-  expense_date       DateTime   @default(now())
+  transaction_date   DateTime   @default(now())
   created_at         DateTime   @default(now())
 
   @@map("expenses")
@@ -44,7 +44,7 @@ model Income {
   description        String?
   recurrence         Recurrence @default(NONE)
   total_installments Int        @default(1)
-  income_date        DateTime   @default(now())
+  transaction_date   DateTime   @default(now())
   created_at         DateTime   @default(now())
 
   @@map("incomes")
