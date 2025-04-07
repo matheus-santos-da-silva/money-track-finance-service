@@ -1,24 +1,27 @@
 import { Recurrence } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 
 interface IncomeProps {
   user_id: string;
-  amount: number;
+  amount: Decimal;
   description?: string;
   category_id: string;
   recurrence: Recurrence;
   total_installments: number;
+  transaction_date?: Date;
 }
 
 export class Income {
   id: string;
   user_id: string;
-  amount: number;
+  amount: Decimal;
   description?: string;
   category_id: string;
   recurrence: Recurrence;
   total_installments: number;
   income_date: Date;
   created_at: Date;
+  transaction_date?: Date;
 
   constructor({
     user_id,
@@ -27,6 +30,7 @@ export class Income {
     description,
     category_id,
     total_installments,
+    transaction_date,
   }: IncomeProps) {
     this.user_id = user_id;
     this.amount = amount;
@@ -34,5 +38,6 @@ export class Income {
     this.description = description;
     this.category_id = category_id;
     this.total_installments = total_installments;
+    this.transaction_date = transaction_date;
   }
 }
