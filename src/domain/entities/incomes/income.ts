@@ -5,8 +5,8 @@ interface IncomeProps {
   user_id: string;
   amount: Decimal;
   description?: string;
-  category_id: string;
   recurrence: Recurrence;
+  category_id: string;
   total_installments: number;
   transaction_date?: Date;
 }
@@ -17,11 +17,10 @@ export class Income {
   amount: Decimal;
   description?: string;
   category_id: string;
-  recurrence: Recurrence;
+  recurrence?: Recurrence;
   total_installments: number;
-  income_date: Date;
+  transaction_date: Date;
   created_at: Date;
-  transaction_date?: Date;
 
   constructor({
     user_id,

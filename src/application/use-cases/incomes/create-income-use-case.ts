@@ -2,10 +2,10 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { CreateFinancialEntryDTO } from "src/domain/DTO/create-financial-entry-DTO";
 import { CategoriesRepositoryProtocol } from "src/infra/database/repositories/categories/protocols/categories-repository-protocol";
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
 import { CreateIncomeProtocol } from "src/domain/use-cases-protocol/incomes";
 import { CreateIncomeServiceProtocol } from "src/domain/services/incomes/protocols/create-income-service-protocol";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
+import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
 
 @Injectable()
 export class CreateIncomeUseCase implements CreateIncomeProtocol {
@@ -17,7 +17,7 @@ export class CreateIncomeUseCase implements CreateIncomeProtocol {
 
   async create(
     data: CreateFinancialEntryDTO
-  ): Promise<CreateExpenseResponseDTO> {
+  ): Promise<CreateIncomeResponseDTO> {
     try {
       const category = await this.categoryRepository.find(data.category_id);
       if (!category) {
