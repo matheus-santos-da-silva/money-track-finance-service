@@ -66,7 +66,7 @@
     ],
     "rootDir": ".",
     "testMatch": [
-      "<rootDir>/test/use-cases/**/*.spec.ts"
+      "<rootDir>/test/units/**/*.spec.ts"
     ],
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/src/$1"
