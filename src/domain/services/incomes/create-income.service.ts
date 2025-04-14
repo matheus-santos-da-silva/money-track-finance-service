@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { CreateFinancialEntryDTO } from "src/domain/DTO/create-financial-entry-DTO";
+import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { Income } from "src/domain/entities/incomes/income";
 
 @Injectable()
@@ -12,7 +12,8 @@ export class CreateIncomeService {
     description,
     recurrence,
     transaction_date,
-  }: CreateFinancialEntryDTO): Promise<Income> {
+    created_at,
+  }: CreateTransactionDTO): Promise<Income> {
     const income = new Income({
       user_id,
       amount,
@@ -21,6 +22,7 @@ export class CreateIncomeService {
       description,
       recurrence,
       transaction_date,
+      created_at,
     });
 
     return income;

@@ -2,7 +2,7 @@ import { Recurrence } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { IsNotEmpty } from "class-validator";
 
-export class CreateFinancialEntryDTO {
+export class CreateTransactionDTO {
   @IsNotEmpty({ message: "O id do usuário é obrigatório!" })
   user_id: string;
 
@@ -18,4 +18,5 @@ export class CreateFinancialEntryDTO {
   recurrence?: Recurrence;
   description?: string;
   transaction_date?: Date;
+  created_at?: Date;
 }

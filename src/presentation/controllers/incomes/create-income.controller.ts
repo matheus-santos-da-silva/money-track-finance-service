@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { verify } from "jsonwebtoken";
 import { AuthGuard } from "src/application/auth/auth.guard";
-import { CreateFinancialEntryDTO } from "src/domain/DTO/create-financial-entry-DTO";
+import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { TokenPayload } from "src/domain/DTO/token-payload-DTO";
 import { CreateIncomeProtocol } from "src/domain/use-cases-protocol/incomes";
 
@@ -19,7 +19,7 @@ export class CreateIncomeController {
 
   @Post()
   async execute(
-    @Body() data: CreateFinancialEntryDTO,
+    @Body() data: CreateTransactionDTO,
     @Headers("authorization") authHeader: string
   ) {
     let validToken: TokenPayload;
