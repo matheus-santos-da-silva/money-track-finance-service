@@ -42,7 +42,10 @@ export class CreateExpenseUseCase implements CreateExpenseProtocol {
           "Erro na criação da despesa, tente novamente!"
         );
       }
-      return createdExpense;
+      return {
+        ...createdExpense,
+        amount: new Decimal(createdExpense.amount).toNumber(),
+      };
     } catch (error) {
       throw error;
     }

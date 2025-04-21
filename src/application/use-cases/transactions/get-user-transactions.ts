@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Decimal } from "@prisma/client/runtime/library";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 import { GetUserTransactionsResponseDTO } from "src/domain/DTO/transactions/get-user-transactions-response-DTO";
 import { GetUserTransactionsProtocol } from "src/domain/use-cases-protocol/transactions/get-user-transactions";
@@ -27,12 +28,24 @@ export class GetUserTransactionsUseCase implements GetUserTransactionsProtocol {
         start_date,
         end_date,
       });
+
       const expenses = await this.expensesRepository.find({
         user_id,
         start_date,
         end_date,
       });
-      return { incomes, expenses };
+
+      const correctIncomes = incomes.map((income) => ({
+        ...income,
+        amount: new Decimal(income.amount).toNumber(),
+      }));
+
+      const correctExpenses = expenses.map((expense) => ({
+        ...expense,
+        amount: new Decimal(expense.amount).toNumber(),
+      }));
+
+      return { incomes: correctIncomes, expenses: correctExpenses };
     } catch (error) {
       throw error;
     }

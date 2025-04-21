@@ -42,7 +42,10 @@ export class CreateIncomeUseCase implements CreateIncomeProtocol {
           "Erro na criação da receita, tente novamente!"
         );
       }
-      return createdIncome;
+      return {
+        ...createdIncome,
+        amount: new Decimal(createdIncome.amount).toNumber(),
+      };
     } catch (error) {
       throw error;
     }
