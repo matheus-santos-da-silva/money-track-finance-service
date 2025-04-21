@@ -1,7 +1,7 @@
 import { Decimal } from "@prisma/client/runtime/library";
 
 export interface GetExpensesResponseDTO {
-  amount: Decimal;
+  amount: Decimal | number;
   category_id: string;
   description?: string;
   id: string;
