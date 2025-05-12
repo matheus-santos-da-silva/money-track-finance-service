@@ -1,4 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
+import { CategoryResponseDTO } from "../categories/category-response-dto";
 
 export interface GetIncomesResponseDTO {
   amount: Decimal | number;
@@ -7,4 +8,5 @@ export interface GetIncomesResponseDTO {
   id: string;
   total_installments: number;
   recurrence: string;
+  category: CategoryResponseDTO;
 }

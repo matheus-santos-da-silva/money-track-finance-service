@@ -24,6 +24,13 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
             id: true,
             total_installments: true,
             recurrence: true,
+            transaction_date: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+              },
+            },
           },
         });
         return incomes;
@@ -43,6 +50,13 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
             id: true,
             total_installments: true,
             recurrence: true,
+            transaction_date: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+              },
+            },
           },
         });
 
