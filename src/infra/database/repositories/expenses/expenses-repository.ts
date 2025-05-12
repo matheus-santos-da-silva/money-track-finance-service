@@ -24,6 +24,13 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
             id: true,
             total_installments: true,
             recurrence: true,
+            transaction_date: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+              },
+            },
           },
         });
         return expenses;
@@ -43,6 +50,12 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
             id: true,
             total_installments: true,
             transaction_date: true,
+            category: {
+              select: {
+                name: true,
+                icon: true,
+              },
+            },
             created_at: true,
             recurrence: true,
           },
