@@ -53,7 +53,10 @@ describe("Create Income UseCase", () => {
     incomesRepository.create(CreateIncomeInputMock);
     const result = useCase.create(CreateIncomeInputMock);
 
-    expect(result).resolves.toMatchObject(CreateIncomeInputMock);
+    expect(result).resolves.toMatchObject({
+      ...CreateIncomeInputMock,
+      amount: 200,
+    });
   });
 
   it("should throw an exception when category not exists", () => {
