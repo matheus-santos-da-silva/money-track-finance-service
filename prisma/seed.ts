@@ -4,12 +4,29 @@ import { CategoryType } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const defaultCategories = [
-  { name: "Alimentação", icon: "alimentacao", type: CategoryType.EXPENSE },
-  { name: "Transporte", icon: "transporte", type: CategoryType.EXPENSE },
-  { name: "Moradia", icon: "moradia", type: CategoryType.EXPENSE },
-  { name: "Lazer", icon: "lazer", type: CategoryType.EXPENSE },
-  { name: "Salário", icon: "salario", type: CategoryType.INCOME },
-  { name: "Freelance", icon: "freelance", type: CategoryType.INCOME },
+  { name: "Alimentação", icon: "red-food", type: CategoryType.EXPENSE },
+  { name: "Transporte", icon: "orange-transport", type: CategoryType.EXPENSE },
+  { name: "Moradia", icon: "cyan-home", type: CategoryType.EXPENSE },
+  { name: "Lazer", icon: "pink-leisure", type: CategoryType.EXPENSE },
+  { name: "Salário", icon: "lightgreen-wage", type: CategoryType.INCOME },
+  {
+    name: "Renda Extra",
+    icon: "darkgreen-extraincome",
+    type: CategoryType.INCOME,
+  },
+  { name: "Viagem", icon: "purple-travel", type: CategoryType.EXPENSE },
+  {
+    name: "Investimento",
+    icon: "orange-investment",
+    type: CategoryType.EXPENSE,
+  },
+  { name: "Educação", icon: "brown-education", type: CategoryType.EXPENSE },
+  {
+    name: "Assinaturas",
+    icon: "darkblue-subscriptions",
+    type: CategoryType.EXPENSE,
+  },
+  { name: "Saúde", icon: "lightblue-health", type: CategoryType.EXPENSE },
 ];
 
 async function seed() {
