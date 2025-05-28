@@ -1,8 +1,8 @@
-import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
-import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
 import { Expense } from "src/domain/entities/expenses/expense";
-import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
+import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
+import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
+import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 
 export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
@@ -11,7 +11,37 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
   async find(
     data: GetUserTransactionsInputDTO
   ): Promise<GetExpensesResponseDTO[]> {
-    throw new Error("Method not implemented.");
+    if (!data.start_date && !data.end_date) {
+      const encounteredExpenses: GetExpensesResponseDTO[] = [];
+      this.expenses.map((expense) => {
+        if (expense.user_id === data.user_id) {
+          encounteredExpenses.push({
+            ...expense,
+            category: { name: "Alimentação", icon: "icon-test" },
+            recurrence: expense.recurrence,
+          });
+        }
+      });
+
+      return encounteredExpenses;
+    } else {
+      const encounteredExpenses: GetExpensesResponseDTO[] = [];
+      this.expenses.map((expense) => {
+        if (
+          expense.user_id === data.user_id &&
+          expense.transaction_date > data.start_date &&
+          expense.transaction_date < data.end_date
+        ) {
+          encounteredExpenses.push({
+            ...expense,
+            category: { name: "Alimentação", icon: "icon-test" },
+            recurrence: expense.recurrence,
+          });
+        }
+      });
+
+      return encounteredExpenses;
+    }
   }
 
   async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
@@ -20,7 +50,9 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
       ...data,
       id,
       created_at: new Date(),
-      transaction_date: new Date(),
+      transaction_date: data.transaction_date
+        ? data.transaction_date
+        : new Date(),
     });
     return { ...data, id };
   }
