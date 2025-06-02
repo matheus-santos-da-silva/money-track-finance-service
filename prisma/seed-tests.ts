@@ -3,6 +3,10 @@ import { CategoryType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const testUser = {
+  id: "test-user-id",
+};
+
 const testCategories = [
   {
     id: "test-category-expense",
@@ -19,6 +23,17 @@ const testCategories = [
 ];
 
 async function seed() {
+  const existingUser = await prisma.user.findUnique({
+    where: { id: testUser.id },
+  });
+
+  if (!existingUser) {
+    await prisma.user.create({ data: testUser });
+    console.log("Usuário de teste criado!");
+  } else {
+    console.log("Usuário de teste já existe.");
+  }
+
   const existingCategories = await prisma.category.findMany({
     where: { user_id: null },
   });
