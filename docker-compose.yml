@@ -20,3 +20,7 @@ services:
       - "5435:5432"
 volumes:
   data:
+
+networks:
+  kafka-network:
+    external: true
