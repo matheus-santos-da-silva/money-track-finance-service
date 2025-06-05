@@ -7,6 +7,11 @@ import { UsersRepositoryProtocol } from "./protocols/users-repository-protocol";
 export class UsersRepository implements UsersRepositoryProtocol {
   constructor(private readonly prisma: PrismaService) {}
 
+  async find(id: string): Promise<User> {
+    const user = this.prisma.user.findUnique({ where: { id } });
+    return user;
+  }
+
   async create(id: string): Promise<User> {
     const user = this.prisma.user.create({ data: { id } });
     return user;

@@ -32,6 +32,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
               },
             },
           },
+          orderBy: { transaction_date: "desc" },
         });
         return expenses;
       } else {
@@ -59,6 +60,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
             created_at: true,
             recurrence: true,
           },
+          orderBy: { transaction_date: "desc" },
         });
         return expenses;
       }

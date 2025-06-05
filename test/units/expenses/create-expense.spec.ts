@@ -3,6 +3,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { CreateExpenseUseCase } from "src/application/use-cases/expenses/create-expense-use-case";
 import { CreateExpenseService } from "src/domain/services/expenses/create-expense.service";
 import { CreateExpenseInputMock } from "../../mocks/expenses/create-expense-input-mock";
+import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
+import { InMemoryUsersRepository } from "../in-memory-repositories/users/in-memory-users-repository";
 import { InMemoryExpensesRepository } from "../in-memory-repositories/expenses/in-memory-expenses-repository";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
 import { InMemoryCategoriesRepository } from "../in-memory-repositories/categories/in-memory-categories-repository";
@@ -14,6 +16,7 @@ describe("Create Expense UseCase", () => {
   let useCase: CreateExpenseUseCase;
   let expensesRepository: ExpensesRepositoryProtocol;
   let categoriesRepository: CategoriesRepositoryProtocol;
+  let usersRepository: UsersRepositoryProtocol;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,6 +34,10 @@ describe("Create Expense UseCase", () => {
           provide: CategoriesRepositoryProtocol,
           useClass: InMemoryCategoriesRepository,
         },
+        {
+          provide: UsersRepositoryProtocol,
+          useClass: InMemoryUsersRepository,
+        },
       ],
     }).compile();
 
@@ -41,15 +48,20 @@ describe("Create Expense UseCase", () => {
     categoriesRepository = module.get<CategoriesRepositoryProtocol>(
       CategoriesRepositoryProtocol
     );
+    usersRepository = module.get<UsersRepositoryProtocol>(
+      UsersRepositoryProtocol
+    );
   });
 
   it("should be defined", () => {
     expect(useCase).toBeDefined();
     expect(expensesRepository).toBeDefined();
     expect(categoriesRepository).toBeDefined();
+    expect(usersRepository).toBeDefined();
   });
 
   it("should create a new expense", () => {
+    usersRepository.create("test-user-id");
     categoriesRepository.create(CreateExpenseCategoryInputMock);
     expensesRepository.create(CreateExpenseInputMock);
     const result = useCase.create(CreateExpenseInputMock);
@@ -61,6 +73,7 @@ describe("Create Expense UseCase", () => {
   });
 
   it("should throw an exception when category not exists", () => {
+    usersRepository.create("test-user-id");
     expensesRepository.create(CreateExpenseInputMock);
     const result = useCase.create(CreateExpenseInputMock);
 
@@ -68,6 +81,7 @@ describe("Create Expense UseCase", () => {
   });
 
   it("should throw an exception when expense is not created successfully", () => {
+    usersRepository.create("test-user-id");
     categoriesRepository.create(CreateExpenseCategoryInputMock);
     jest.spyOn(expensesRepository, "create").mockResolvedValue(null);
     const result = useCase.create(CreateExpenseInputMock);

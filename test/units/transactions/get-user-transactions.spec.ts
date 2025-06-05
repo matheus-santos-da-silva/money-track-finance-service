@@ -1,6 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateIncomeInputMock } from "../../../test/mocks/incomes/create-income-input-mock";
 import { CreateExpenseInputMock } from "../../mocks/expenses/create-expense-input-mock";
+import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
+import { InMemoryUsersRepository } from "../in-memory-repositories/users/in-memory-users-repository";
 import { IncomesRepositoryProtocol } from "../../../src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
 import { InMemoryIncomesRepository } from "../in-memory-repositories/incomes/in-memory-incomes-repository";
 import { GetUserTransactionsUseCase } from "../../../src/application/use-cases/transactions/get-user-transactions";
@@ -18,6 +20,7 @@ describe("Get User Transactions UseCase", () => {
   let incomesRepository: IncomesRepositoryProtocol;
   let expensesRepository: ExpensesRepositoryProtocol;
   let categoriesRepository: CategoriesRepositoryProtocol;
+  let usersRepository: UsersRepositoryProtocol;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,6 +38,10 @@ describe("Get User Transactions UseCase", () => {
           provide: CategoriesRepositoryProtocol,
           useClass: InMemoryCategoriesRepository,
         },
+        {
+          provide: UsersRepositoryProtocol,
+          useClass: InMemoryUsersRepository,
+        },
       ],
     }).compile();
 
@@ -50,15 +57,20 @@ describe("Get User Transactions UseCase", () => {
     categoriesRepository = module.get<CategoriesRepositoryProtocol>(
       CategoriesRepositoryProtocol
     );
+    usersRepository = module.get<UsersRepositoryProtocol>(
+      UsersRepositoryProtocol
+    );
   });
 
   it("should be defined", () => {
     expect(useCase).toBeDefined();
     expect(incomesRepository).toBeDefined();
     expect(expensesRepository).toBeDefined();
+    expect(usersRepository).toBeDefined();
   });
 
   it("should return a empty array if user do not have transactions", () => {
+    usersRepository.create("test-user-id");
     const result = useCase.find({ user_id: "test-user-id" });
     expect(result).resolves.toMatchObject({
       expenses: [],
@@ -67,6 +79,7 @@ describe("Get User Transactions UseCase", () => {
   });
 
   it("should return all user transactions", () => {
+    usersRepository.create("test-user-id");
     categoriesRepository.create(CreateIncomeCategoryInputMock);
     categoriesRepository.create(CreateExpenseCategoryInputMock);
     incomesRepository.create(CreateIncomeInputMock);
@@ -81,6 +94,7 @@ describe("Get User Transactions UseCase", () => {
   });
 
   it("should return user transactions on the given date", () => {
+    usersRepository.create("test-user-id");
     categoriesRepository.create(CreateIncomeCategoryInputMock);
     incomesRepository.create({
       ...CreateIncomeInputMock,
