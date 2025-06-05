@@ -32,6 +32,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
               },
             },
           },
+          orderBy: { transaction_date: "desc" },
         });
         return incomes;
       } else {
@@ -58,6 +59,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
               },
             },
           },
+          orderBy: { transaction_date: "desc" },
         });
 
         return incomes;
