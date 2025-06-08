@@ -1,10 +1,13 @@
 import { Module } from "@nestjs/common";
-import { CreateIncomeUseCase } from "./create-income-use-case";
-import { CreateIncomeProtocol } from "src/domain/use-cases-protocol/incomes";
 import { IncomesServicesModule } from "src/domain/services/incomes/incomes-services.module";
 import { UsersRepositoriesModule } from "src/infra/database/repositories/users/users-repositories.module";
 import { IncomesRepositoriesModule } from "src/infra/database/repositories/incomes/incomes-repositories.module";
 import { CategoriesRepositoriesModule } from "src/infra/database/repositories/categories/categories-repositories.module";
+import { CreateIncomeUseCase, GetIncomeByIdUseCase } from "./";
+import {
+  CreateIncomeProtocol,
+  GetIncomeByIdProtocol,
+} from "src/domain/use-cases-protocol/incomes";
 
 @Module({
   imports: [
@@ -18,7 +21,11 @@ import { CategoriesRepositoriesModule } from "src/infra/database/repositories/ca
       provide: CreateIncomeProtocol,
       useClass: CreateIncomeUseCase,
     },
+    {
+      provide: GetIncomeByIdProtocol,
+      useClass: GetIncomeByIdUseCase,
+    },
   ],
-  exports: [CreateIncomeProtocol],
+  exports: [CreateIncomeProtocol, GetIncomeByIdProtocol],
 })
 export class IncomesUseCasesModule {}

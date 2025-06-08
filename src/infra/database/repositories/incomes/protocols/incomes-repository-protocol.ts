@@ -5,7 +5,10 @@ import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-respon
 
 export abstract class IncomesRepositoryProtocol {
   abstract create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO>;
+
   abstract find(
     data: GetUserTransactionsInputDTO
   ): Promise<GetIncomesResponseDTO[]>;
+
+  abstract findById(id: string): Promise<GetIncomesResponseDTO>;
 }

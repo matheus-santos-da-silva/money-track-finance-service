@@ -71,6 +71,36 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
+  async findById(id: string): Promise<GetIncomesResponseDTO> {
+    try {
+      const income = await this.prisma.income.findUnique({
+        where: { id },
+        select: {
+          amount: true,
+          category_id: true,
+          description: true,
+          id: true,
+          total_installments: true,
+          transaction_date: true,
+          category: {
+            select: {
+              name: true,
+              icon: true,
+            },
+          },
+          created_at: true,
+          recurrence: true,
+        },
+      });
+
+      return income;
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao retornar a receita, tente novamente!"
+      );
+    }
+  }
+
   async create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO> {
     try {
       const income = await this.prisma.income.create({
