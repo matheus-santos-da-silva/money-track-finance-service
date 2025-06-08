@@ -34,7 +34,7 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
         ) {
           encounteredIncomes.push({
             ...income,
-            category: { name: "Lazer", icon: "icon-test" },
+            category: { name: "Salario", icon: "icon-test" },
             recurrence: income.recurrence,
           });
         }
@@ -44,8 +44,19 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
+  async findById(id: string): Promise<GetIncomesResponseDTO> {
+    const income = this.incomes.find((income) => income.id === id);
+    if (income) {
+      return {
+        ...income,
+        category: { name: "Salario", icon: "icon-test" },
+        recurrence: income.recurrence,
+      };
+    }
+  }
+
   async create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO> {
-    const id = "984b6589-0587-4c91-838a-d33f5f6ed036";
+    const id = "test-income-id";
     this.incomes.push({
       ...data,
       id,
