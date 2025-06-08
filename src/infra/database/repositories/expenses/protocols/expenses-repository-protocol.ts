@@ -7,7 +7,10 @@ export abstract class ExpensesRepositoryProtocol {
   abstract create(
     data: CreateTransactionDTO
   ): Promise<CreateExpenseResponseDTO>;
+
   abstract find(
     data: GetUserTransactionsInputDTO
   ): Promise<GetExpensesResponseDTO[]>;
+
+  abstract findById(id: string): Promise<GetExpensesResponseDTO>;
 }
