@@ -1,7 +1,7 @@
 import { Decimal } from "@prisma/client/runtime/library";
 
 export const CreatedExpenseMock = {
-  id: "984b6589-0587-4c91-838a-d33f5f6ed036",
+  id: "test-expense-id",
   category_id: "test-category-expense",
   description: "Test Expense",
   amount: new Decimal(200),

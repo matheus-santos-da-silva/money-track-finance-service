@@ -44,8 +44,19 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
+  async findById(id: string): Promise<GetExpensesResponseDTO> {
+    const expense = this.expenses.find((expense) => expense.id === id);
+    if (expense) {
+      return {
+        ...expense,
+        category: { name: "Alimentação", icon: "icon-test" },
+        recurrence: expense.recurrence,
+      };
+    }
+  }
+
   async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
-    const id = "984b6589-0587-4c91-838a-d33f5f6ed036";
+    const id = "test-expense-id";
     this.expenses.push({
       ...data,
       id,
