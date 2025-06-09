@@ -13,4 +13,5 @@ export abstract class ExpensesRepositoryProtocol {
   ): Promise<GetExpensesResponseDTO[]>;
 
   abstract findById(id: string): Promise<GetExpensesResponseDTO>;
+  abstract delete(id: string): Promise<void>;
 }

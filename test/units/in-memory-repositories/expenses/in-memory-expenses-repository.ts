@@ -44,6 +44,11 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
+  async delete(id: string): Promise<void> {
+    const index = this.expenses.findIndex((expense) => expense.id === id);
+    if (index === -1) this.expenses.splice(index, 1);
+  }
+
   async findById(id: string): Promise<GetExpensesResponseDTO> {
     const expense = this.expenses.find((expense) => expense.id === id);
     if (expense) {

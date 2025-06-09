@@ -71,6 +71,14 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
+  async delete(id: string): Promise<void> {
+    try {
+      await this.prisma.expense.delete({ where: { id } });
+    } catch (error) {
+      throw new BadRequestException("Erro ao excluir a despesa");
+    }
+  }
+
   async findById(id: string): Promise<GetExpensesResponseDTO> {
     try {
       const expense = await this.prisma.expense.findUnique({

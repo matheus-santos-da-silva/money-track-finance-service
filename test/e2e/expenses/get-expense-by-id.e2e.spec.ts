@@ -24,7 +24,7 @@ describe("Get Expense By Id Controller (e2e) - (Get /expenses/:id)", () => {
   });
 
   afterEach(async () => {
-    await prismaService.income.deleteMany({});
+    await prismaService.expense.deleteMany({});
   });
 
   it("should return status code 200 when get a expense", async () => {

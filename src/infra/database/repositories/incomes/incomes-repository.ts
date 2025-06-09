@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { IncomesRepositoryProtocol } from "./protocols/incomes-repository-protocol";
 import { PrismaService } from "../../config/prisma.service";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
-import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
+import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
+import { IncomesRepositoryProtocol } from "./protocols/incomes-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
+import { BadRequestException, Injectable } from "@nestjs/common";
 
 @Injectable()
 export class IncomesRepository implements IncomesRepositoryProtocol {
@@ -68,6 +68,14 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
       throw new BadRequestException(
         "Erro ao retornar as receitas, tente novamente!"
       );
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      await this.prisma.income.delete({ where: { id } });
+    } catch (error) {
+      throw new BadRequestException("Erro ao excluir a receita");
     }
   }
 

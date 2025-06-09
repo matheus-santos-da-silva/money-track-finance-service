@@ -11,4 +11,5 @@ export abstract class IncomesRepositoryProtocol {
   ): Promise<GetIncomesResponseDTO[]>;
 
   abstract findById(id: string): Promise<GetIncomesResponseDTO>;
+  abstract delete(id: string): Promise<void>;
 }
