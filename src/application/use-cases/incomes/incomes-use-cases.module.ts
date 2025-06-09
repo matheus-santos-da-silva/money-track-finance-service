@@ -3,9 +3,14 @@ import { IncomesServicesModule } from "src/domain/services/incomes/incomes-servi
 import { UsersRepositoriesModule } from "src/infra/database/repositories/users/users-repositories.module";
 import { IncomesRepositoriesModule } from "src/infra/database/repositories/incomes/incomes-repositories.module";
 import { CategoriesRepositoriesModule } from "src/infra/database/repositories/categories/categories-repositories.module";
-import { CreateIncomeUseCase, GetIncomeByIdUseCase } from "./";
+import {
+  CreateIncomeUseCase,
+  DeleteIncomeUseCase,
+  GetIncomeByIdUseCase,
+} from "./";
 import {
   CreateIncomeProtocol,
+  DeleteIncomeProtocol,
   GetIncomeByIdProtocol,
 } from "src/domain/use-cases-protocol/incomes";
 
@@ -25,7 +30,11 @@ import {
       provide: GetIncomeByIdProtocol,
       useClass: GetIncomeByIdUseCase,
     },
+    {
+      provide: DeleteIncomeProtocol,
+      useClass: DeleteIncomeUseCase,
+    },
   ],
-  exports: [CreateIncomeProtocol, GetIncomeByIdProtocol],
+  exports: [CreateIncomeProtocol, GetIncomeByIdProtocol, DeleteIncomeProtocol],
 })
 export class IncomesUseCasesModule {}
