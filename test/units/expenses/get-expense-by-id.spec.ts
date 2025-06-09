@@ -41,7 +41,7 @@ describe("Get Expense By Id UseCase", () => {
     });
   });
 
-  it("should thrown an error when expense not exists", () => {
+  it("should throw an error when expense not exists", () => {
     const result = useCase.findById("test-expense-id");
 
     expect(result).rejects.toThrow("Despesa não existe, tente novamente!");
