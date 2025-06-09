@@ -3,9 +3,14 @@ import { ExpensesServicesModule } from "src/domain/services/expenses/expenses-se
 import { UsersRepositoriesModule } from "src/infra/database/repositories/users/users-repositories.module";
 import { ExpensesRepositoriesModule } from "src/infra/database/repositories/expenses/expenses-repositories.module";
 import { CategoriesRepositoriesModule } from "src/infra/database/repositories/categories/categories-repositories.module";
-import { CreateExpenseUseCase, GetExpenseByIdUseCase } from "./";
+import {
+  CreateExpenseUseCase,
+  DeleteExpenseUseCase,
+  GetExpenseByIdUseCase,
+} from "./";
 import {
   CreateExpenseProtocol,
+  DeleteExpenseProtocol,
   GetExpenseByIdProtocol,
 } from "src/domain/use-cases-protocol/expenses";
 
@@ -25,7 +30,15 @@ import {
       provide: GetExpenseByIdProtocol,
       useClass: GetExpenseByIdUseCase,
     },
+    {
+      provide: DeleteExpenseProtocol,
+      useClass: DeleteExpenseUseCase,
+    },
   ],
-  exports: [CreateExpenseProtocol, GetExpenseByIdProtocol],
+  exports: [
+    CreateExpenseProtocol,
+    GetExpenseByIdProtocol,
+    DeleteExpenseProtocol,
+  ],
 })
 export class ExpensesUseCasesModule {}
