@@ -44,6 +44,11 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
+  async delete(id: string): Promise<void> {
+    const index = this.incomes.findIndex((income) => income.id === id);
+    if (index === -1) this.incomes.splice(index, 1);
+  }
+
   async findById(id: string): Promise<GetIncomesResponseDTO> {
     const income = this.incomes.find((income) => income.id === id);
     if (income) {
