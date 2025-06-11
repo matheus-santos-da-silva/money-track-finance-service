@@ -1,7 +1,8 @@
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
-import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
-import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
+import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
+import { GetIncomeByIdResponseDTO } from "src/domain/DTO/incomes/get-income-by-id-response-DTO";
+import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 
 export abstract class IncomesRepositoryProtocol {
   abstract create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO>;
@@ -10,6 +11,6 @@ export abstract class IncomesRepositoryProtocol {
     data: GetUserTransactionsInputDTO
   ): Promise<GetIncomesResponseDTO[]>;
 
-  abstract findById(id: string): Promise<GetIncomesResponseDTO>;
+  abstract findById(id: string): Promise<GetIncomeByIdResponseDTO>;
   abstract delete(id: string): Promise<void>;
 }

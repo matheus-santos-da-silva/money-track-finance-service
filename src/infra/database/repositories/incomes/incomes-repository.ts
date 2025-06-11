@@ -2,6 +2,7 @@ import { PrismaService } from "../../config/prisma.service";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
 import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
+import { GetIncomeByIdResponseDTO } from "src/domain/DTO/incomes/get-income-by-id-response-DTO";
 import { IncomesRepositoryProtocol } from "./protocols/incomes-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 import { BadRequestException, Injectable } from "@nestjs/common";
@@ -79,7 +80,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
-  async findById(id: string): Promise<GetIncomesResponseDTO> {
+  async findById(id: string): Promise<GetIncomeByIdResponseDTO> {
     try {
       const income = await this.prisma.income.findUnique({
         where: { id },
@@ -88,6 +89,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
           category_id: true,
           description: true,
           id: true,
+          user_id: true,
           total_installments: true,
           transaction_date: true,
           category: {
