@@ -2,6 +2,7 @@ import { Expense } from "src/domain/entities/expenses/expense";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
 import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
+import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 
@@ -49,7 +50,7 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
     if (index === -1) this.expenses.splice(index, 1);
   }
 
-  async findById(id: string): Promise<GetExpensesResponseDTO> {
+  async findById(id: string): Promise<GetExpenseByIdResponseDTO> {
     const expense = this.expenses.find((expense) => expense.id === id);
     if (expense) {
       return {

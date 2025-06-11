@@ -32,12 +32,23 @@ describe("Delete Expense UseCase", () => {
 
   it("should delete a expense", async () => {
     expensesRepository.create(CreateExpenseInputMock);
-    await expect(useCase.delete("test-expense-id")).resolves.toBeUndefined();
+    await expect(
+      useCase.delete({ id: "test-expense-id", user_id: "test-user-id" })
+    ).resolves.toBeUndefined();
   });
 
   it("should throw an error if expense does not exists", async () => {
-    await expect(useCase.delete("invalid-id")).rejects.toThrow(
-      "Despesa não existe!"
+    await expect(
+      useCase.delete({ id: "invalid-id", user_id: "test-user-id" })
+    ).rejects.toThrow("Despesa não existe!");
+  });
+
+  it("should throw an error if the user-id does not match the expense owner's user-id", async () => {
+    expensesRepository.create(CreateExpenseInputMock);
+    await expect(
+      useCase.delete({ id: "test-expense-id", user_id: "test-invalid-user-id" })
+    ).rejects.toThrow(
+      "Esta despesa possui outro dono, tente novamente com outra!"
     );
   });
 });

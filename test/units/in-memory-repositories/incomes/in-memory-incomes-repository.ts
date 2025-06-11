@@ -3,6 +3,7 @@ import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transac
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
 import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
+import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 
 export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
@@ -49,7 +50,7 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
     if (index === -1) this.incomes.splice(index, 1);
   }
 
-  async findById(id: string): Promise<GetIncomesResponseDTO> {
+  async findById(id: string): Promise<GetExpenseByIdResponseDTO> {
     const income = this.incomes.find((income) => income.id === id);
     if (income) {
       return {
