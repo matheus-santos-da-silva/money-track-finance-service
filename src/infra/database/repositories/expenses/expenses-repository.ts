@@ -2,6 +2,7 @@ import { PrismaService } from "../../config/prisma.service";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
 import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
+import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
 import { ExpensesRepositoryProtocol } from "./protocols/expenses-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 import { BadRequestException, Injectable } from "@nestjs/common";
@@ -79,7 +80,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
-  async findById(id: string): Promise<GetExpensesResponseDTO> {
+  async findById(id: string): Promise<GetExpenseByIdResponseDTO> {
     try {
       const expense = await this.prisma.expense.findUnique({
         where: { id },
@@ -89,6 +90,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
           description: true,
           id: true,
           total_installments: true,
+          user_id: true,
           transaction_date: true,
           category: {
             select: {

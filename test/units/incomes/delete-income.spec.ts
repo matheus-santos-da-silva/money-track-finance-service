@@ -32,12 +32,23 @@ describe("Delete Income UseCase", () => {
 
   it("should delete a income", async () => {
     incomesRepository.create(CreateIncomeInputMock);
-    await expect(useCase.delete("test-income-id")).resolves.toBeUndefined();
+    await expect(
+      useCase.delete({ id: "test-income-id", user_id: "test-user-id" })
+    ).resolves.toBeUndefined();
   });
 
   it("should throw an error if income does not exists", async () => {
-    await expect(useCase.delete("invalid-id")).rejects.toThrow(
-      "Receita não existe!"
+    await expect(
+      useCase.delete({ id: "invalid-id", user_id: "test-user-id" })
+    ).rejects.toThrow("Receita não existe!");
+  });
+
+  it("should throw an error if the user-id does not match the income owner's user-id", async () => {
+    incomesRepository.create(CreateIncomeInputMock);
+    await expect(
+      useCase.delete({ id: "test-income-id", user_id: "test-invalid-user-id" })
+    ).rejects.toThrow(
+      "Esta receita possui outro dono, tente novamente com outra!"
     );
   });
 });
