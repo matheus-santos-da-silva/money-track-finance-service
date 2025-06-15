@@ -7,11 +7,13 @@ import {
   CreateIncomeUseCase,
   DeleteIncomeUseCase,
   GetIncomeByIdUseCase,
+  UpdateIncomeUseCase,
 } from "./";
 import {
   CreateIncomeProtocol,
   DeleteIncomeProtocol,
   GetIncomeByIdProtocol,
+  UpdateIncomeProtocol,
 } from "src/domain/use-cases-protocol/incomes";
 
 @Module({
@@ -34,7 +36,16 @@ import {
       provide: DeleteIncomeProtocol,
       useClass: DeleteIncomeUseCase,
     },
+    {
+      provide: UpdateIncomeProtocol,
+      useClass: UpdateIncomeUseCase,
+    },
   ],
-  exports: [CreateIncomeProtocol, GetIncomeByIdProtocol, DeleteIncomeProtocol],
+  exports: [
+    CreateIncomeProtocol,
+    GetIncomeByIdProtocol,
+    DeleteIncomeProtocol,
+    UpdateIncomeProtocol,
+  ],
 })
 export class IncomesUseCasesModule {}

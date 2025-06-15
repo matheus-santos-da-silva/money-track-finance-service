@@ -7,11 +7,13 @@ import {
   CreateExpenseUseCase,
   DeleteExpenseUseCase,
   GetExpenseByIdUseCase,
+  UpdateExpenseUseCase,
 } from "./";
 import {
   CreateExpenseProtocol,
   DeleteExpenseProtocol,
   GetExpenseByIdProtocol,
+  UpdateExpenseProtocol,
 } from "src/domain/use-cases-protocol/expenses";
 
 @Module({
@@ -34,11 +36,16 @@ import {
       provide: DeleteExpenseProtocol,
       useClass: DeleteExpenseUseCase,
     },
+    {
+      provide: UpdateExpenseProtocol,
+      useClass: UpdateExpenseUseCase,
+    },
   ],
   exports: [
     CreateExpenseProtocol,
     GetExpenseByIdProtocol,
     DeleteExpenseProtocol,
+    UpdateExpenseProtocol,
   ],
 })
 export class ExpensesUseCasesModule {}

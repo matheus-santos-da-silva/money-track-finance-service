@@ -1,5 +1,7 @@
 import { Income } from "src/domain/entities/incomes/income";
+import { Decimal } from "@prisma/client/runtime/library";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
+import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
 import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
@@ -43,6 +45,18 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
 
       return encounteredIncomes;
     }
+  }
+
+  async update(id: string, data: UpdateTransactionDTO): Promise<void> {
+    const incomeIndex = this.incomes.findIndex((income) => income.id === id);
+
+    const currentIncome = this.incomes[incomeIndex];
+
+    this.incomes[incomeIndex] = {
+      ...currentIncome,
+      ...data,
+      amount: data.amount ? new Decimal(data.amount) : currentIncome.amount,
+    };
   }
 
   async delete(id: string): Promise<void> {
