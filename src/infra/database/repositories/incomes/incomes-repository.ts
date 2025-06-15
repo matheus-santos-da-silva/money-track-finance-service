@@ -1,4 +1,5 @@
 import { PrismaService } from "../../config/prisma.service";
+import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
 import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
@@ -68,6 +69,16 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
     } catch (error) {
       throw new BadRequestException(
         "Erro ao retornar as receitas, tente novamente!"
+      );
+    }
+  }
+
+  async update(id: string, data: UpdateTransactionDTO): Promise<void> {
+    try {
+      await this.prisma.income.update({ where: { id }, data });
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao atualizar a receita, tente novamente!"
       );
     }
   }

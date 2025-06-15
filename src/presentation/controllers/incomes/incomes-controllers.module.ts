@@ -5,6 +5,7 @@ import {
   CreateIncomeController,
   GetIncomeByIdController,
   DeleteIncomeController,
+  UpdateIncomeController,
 } from "./";
 
 @Module({
@@ -13,6 +14,7 @@ import {
     CreateIncomeController,
     GetIncomeByIdController,
     DeleteIncomeController,
+    UpdateIncomeController,
   ],
   providers: [
     {
