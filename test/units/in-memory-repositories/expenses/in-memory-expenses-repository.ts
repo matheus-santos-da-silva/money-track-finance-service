@@ -5,6 +5,8 @@ import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense
 import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
+import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
   expenses: Expense[] = [];
@@ -43,6 +45,22 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
 
       return encounteredExpenses;
     }
+  }
+
+  async update(id: string, data: UpdateTransactionDTO): Promise<void> {
+    const expenseIndex = this.expenses.findIndex(
+      (expense) => expense.id === id
+    );
+
+    const currentExpense = this.expenses[expenseIndex];
+
+    if (data.amount) data.amount = new Decimal(data.amount);
+
+    this.expenses[expenseIndex] = {
+      ...currentExpense,
+      ...data,
+      amount: data.amount ? new Decimal(data.amount) : currentExpense.amount,
+    };
   }
 
   async delete(id: string): Promise<void> {
