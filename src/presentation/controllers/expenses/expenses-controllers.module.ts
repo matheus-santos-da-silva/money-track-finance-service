@@ -5,6 +5,7 @@ import {
   CreateExpenseController,
   GetExpenseByIdController,
   DeleteExpenseController,
+  UpdateExpenseController,
 } from "./";
 
 @Module({
@@ -13,6 +14,7 @@ import {
     CreateExpenseController,
     GetExpenseByIdController,
     DeleteExpenseController,
+    UpdateExpenseController,
   ],
   providers: [
     {

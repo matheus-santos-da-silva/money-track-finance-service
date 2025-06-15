@@ -1,5 +1,6 @@
 import { PrismaService } from "../../config/prisma.service";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
+import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
 import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
 import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
@@ -68,6 +69,16 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
     } catch (error) {
       throw new BadRequestException(
         "Erro ao retornar as despesas, tente novamente!"
+      );
+    }
+  }
+
+  async update(id: string, data: UpdateTransactionDTO): Promise<void> {
+    try {
+      await this.prisma.expense.update({ where: { id }, data });
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao atualizar a despesa, tente novamente!"
       );
     }
   }
