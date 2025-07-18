@@ -1,3 +1,4 @@
+import { Decimal } from "@prisma/client/runtime/library";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateIncomeUseCase } from "src/application/use-cases/incomes/create-income-use-case";
 import { CreateIncomeService } from "src/domain/services/incomes/create-income.service";
@@ -61,7 +62,7 @@ describe("Create Income UseCase", () => {
 
   it("should create a new income", () => {
     usersRepository.create("test-user-id");
-    categoriesRepository.create(CreateIncomeCategoryInputMock);
+    categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     incomesRepository.create(CreateIncomeInputMock);
     const result = useCase.create(CreateIncomeInputMock);
 
@@ -69,6 +70,24 @@ describe("Create Income UseCase", () => {
       ...CreateIncomeInputMock,
       amount: 200,
     });
+  });
+
+  it("should throw an exception when amount is equal to 0", async () => {
+    usersRepository.create("test-user-id");
+    categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
+    incomesRepository.create({
+      ...CreateIncomeInputMock,
+      amount: new Decimal(0),
+    });
+
+    await expect(
+      useCase.create({
+        ...CreateIncomeInputMock,
+        amount: new Decimal(0),
+      })
+    ).rejects.toThrow(
+      "Não é possível cadastrar uma receita com o valor R$ 00,00."
+    );
   });
 
   it("should throw an exception when category not exists", () => {
@@ -81,7 +100,7 @@ describe("Create Income UseCase", () => {
 
   it("should throw an exception when income is not created successfully", () => {
     usersRepository.create("test-user-id");
-    categoriesRepository.create(CreateIncomeCategoryInputMock);
+    categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     jest.spyOn(incomesRepository, "create").mockResolvedValue(null);
     const result = useCase.create(CreateIncomeInputMock);
 
