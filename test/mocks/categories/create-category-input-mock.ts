@@ -1,8 +1,7 @@
 import { CategoryType } from "@prisma/client";
 
 export const CreateExpenseCategoryInputMock = {
-  id: "test-category-expense",
-  user_id: "test-user-id",
+  id: "test-category-id",
   type: CategoryType.EXPENSE,
   name: "Alimentação",
   icon: "icon-test",
@@ -10,8 +9,7 @@ export const CreateExpenseCategoryInputMock = {
 };
 
 export const CreateIncomeCategoryInputMock = {
-  id: "test-category-income",
-  user_id: "test-user-id",
+  id: "test-category-id",
   type: CategoryType.INCOME,
   name: "Lazer",
   icon: "icon-test",
