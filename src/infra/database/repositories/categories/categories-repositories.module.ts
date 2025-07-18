@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { PrismaModule } from "../../config/prisma.module";
-import { CategoriesRepositoryProtocol } from "./protocols/categories-repository-protocol";
 import { CategoriesRepository } from "./categories-repository";
+import { CategoriesRepositoryProtocol } from "./protocols/categories-repository-protocol";
 
 @Module({
   imports: [PrismaModule],
