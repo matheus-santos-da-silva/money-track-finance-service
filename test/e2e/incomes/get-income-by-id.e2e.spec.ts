@@ -30,7 +30,7 @@ describe("Get Income By Id Controller (e2e) - (Get /incomes/:id)", () => {
   it("should return status code 200 when get a income", async () => {
     const { body } = await request(app.getHttpServer())
       .post("/incomes")
-      .send(CreateIncomeInputMock)
+      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
       .set("Authorization", `Bearer ${testToken}`);
 
     await request(app.getHttpServer())

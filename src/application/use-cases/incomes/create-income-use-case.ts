@@ -20,6 +20,12 @@ export class CreateIncomeUseCase implements CreateIncomeProtocol {
 
   async create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO> {
     try {
+      if (new Decimal(data.amount).equals(0)) {
+        throw new BadRequestException(
+          "Não é possível cadastrar uma receita com o valor R$ 00,00."
+        );
+      }
+
       const user = await this.usersRepository.find(data.user_id);
       if (!user) {
         throw new BadRequestException(

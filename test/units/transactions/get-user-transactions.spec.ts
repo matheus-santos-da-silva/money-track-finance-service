@@ -80,8 +80,8 @@ describe("Get User Transactions UseCase", () => {
 
   it("should return all user transactions", () => {
     usersRepository.create("test-user-id");
-    categoriesRepository.create(CreateIncomeCategoryInputMock);
-    categoriesRepository.create(CreateExpenseCategoryInputMock);
+    categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
+    categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     incomesRepository.create(CreateIncomeInputMock);
     expensesRepository.create(CreateExpenseInputMock);
 
@@ -95,7 +95,7 @@ describe("Get User Transactions UseCase", () => {
 
   it("should return user transactions on the given date", () => {
     usersRepository.create("test-user-id");
-    categoriesRepository.create(CreateIncomeCategoryInputMock);
+    categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     incomesRepository.create({
       ...CreateIncomeInputMock,
       transaction_date: new Date("2025-04-21T12:00:00+00:00"),
@@ -116,7 +116,7 @@ describe("Get User Transactions UseCase", () => {
       incomes: [
         expect.objectContaining({
           user_id: "test-user-id",
-          category_id: "test-category-income",
+          category_id: "test-category-id",
           amount: 200,
           description: "Test Income",
           recurrence: "NONE",

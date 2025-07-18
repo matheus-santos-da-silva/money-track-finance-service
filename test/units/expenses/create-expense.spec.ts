@@ -1,3 +1,4 @@
+import { Decimal } from "@prisma/client/runtime/library";
 import { CreatedExpenseMock } from "../../mocks/expenses/created-expense-mock";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateExpenseUseCase } from "src/application/use-cases/expenses/create-expense-use-case";
@@ -62,7 +63,7 @@ describe("Create Expense UseCase", () => {
 
   it("should create a new expense", () => {
     usersRepository.create("test-user-id");
-    categoriesRepository.create(CreateExpenseCategoryInputMock);
+    categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     expensesRepository.create(CreateExpenseInputMock);
     const result = useCase.create(CreateExpenseInputMock);
 
@@ -70,6 +71,23 @@ describe("Create Expense UseCase", () => {
       ...CreatedExpenseMock,
       amount: 200,
     });
+  });
+
+  it("should throw an exception when amount is equal to 0", () => {
+    usersRepository.create("test-user-id");
+    categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
+    expensesRepository.create({
+      ...CreateExpenseInputMock,
+      amount: new Decimal(0),
+    });
+    const result = useCase.create({
+      ...CreateExpenseInputMock,
+      amount: new Decimal(0),
+    });
+
+    expect(result).rejects.toThrow(
+      "Não é possível cadastrar uma despesa com o valor R$ 00,00."
+    );
   });
 
   it("should throw an exception when category not exists", () => {
@@ -82,7 +100,7 @@ describe("Create Expense UseCase", () => {
 
   it("should throw an exception when expense is not created successfully", () => {
     usersRepository.create("test-user-id");
-    categoriesRepository.create(CreateExpenseCategoryInputMock);
+    categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     jest.spyOn(expensesRepository, "create").mockResolvedValue(null);
     const result = useCase.create(CreateExpenseInputMock);
 
