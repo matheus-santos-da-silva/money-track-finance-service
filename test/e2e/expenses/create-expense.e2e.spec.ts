@@ -30,7 +30,7 @@ describe("Create Expense Controller (e2e) - (POST /expenses)", () => {
   it("should return status code 201 when creating an expense", async () => {
     await request(app.getHttpServer())
       .post("/expenses")
-      .send(CreateExpenseInputMock)
+      .send({ ...CreateExpenseInputMock, category_id: "test-category-expense" })
       .set("Authorization", `Bearer ${testToken}`)
       .expect(201);
   });
@@ -38,7 +38,7 @@ describe("Create Expense Controller (e2e) - (POST /expenses)", () => {
   it("should return 401 status code when token is not provided", async () => {
     await request(app.getHttpServer())
       .post("/expenses")
-      .send(CreateExpenseInputMock)
+      .send({ ...CreateExpenseInputMock, category_id: "test-category-expense" })
       .expect(401);
   });
 
@@ -46,7 +46,7 @@ describe("Create Expense Controller (e2e) - (POST /expenses)", () => {
     await request(app.getHttpServer())
       .post("/expenses")
       .set("Authorization", `Bearer invalid-token`)
-      .send(CreateExpenseInputMock)
+      .send({ ...CreateExpenseInputMock, category_id: "test-category-expense" })
       .expect(401);
   });
 

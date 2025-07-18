@@ -30,7 +30,7 @@ describe("Update Expense Controller (e2e) - (Patch /expenses/:id)", () => {
   it("should return status code 200 when update a expense", async () => {
     const createExpense = await request(app.getHttpServer())
       .post("/expenses")
-      .send(CreateExpenseInputMock)
+      .send({ ...CreateExpenseInputMock, category_id: "test-category-expense" })
       .set("Authorization", `Bearer ${testToken}`);
 
     await request(app.getHttpServer())

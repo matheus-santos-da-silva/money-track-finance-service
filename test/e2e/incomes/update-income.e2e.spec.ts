@@ -30,7 +30,7 @@ describe("Update Income Controller (e2e) - (Patch /incomes/:id)", () => {
   it("should return status code 200 when update a income", async () => {
     const createIncome = await request(app.getHttpServer())
       .post("/incomes")
-      .send(CreateIncomeInputMock)
+      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
       .set("Authorization", `Bearer ${testToken}`);
 
     await request(app.getHttpServer())
@@ -52,7 +52,7 @@ describe("Update Income Controller (e2e) - (Patch /incomes/:id)", () => {
   it("should return status code 400 when body is empty", async () => {
     const createIncome = await request(app.getHttpServer())
       .post("/incomes")
-      .send(CreateIncomeInputMock)
+      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
       .set("Authorization", `Bearer ${testToken}`);
 
     const { body } = await request(app.getHttpServer())

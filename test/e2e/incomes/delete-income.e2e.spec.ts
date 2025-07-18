@@ -30,7 +30,7 @@ describe("Delete Income Controller (e2e) - (Delete /incomes/:id)", () => {
   it("should return status code 200 when delete a income", async () => {
     const createIncome = await request(app.getHttpServer())
       .post("/incomes")
-      .send(CreateIncomeInputMock)
+      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
       .set("Authorization", `Bearer ${testToken}`);
 
     await request(app.getHttpServer())
