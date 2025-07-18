@@ -20,6 +20,12 @@ export class CreateExpenseUseCase implements CreateExpenseProtocol {
 
   async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
     try {
+      if (new Decimal(data.amount).equals(0)) {
+        throw new BadRequestException(
+          "Não é possível cadastrar uma despesa com o valor R$ 00,00."
+        );
+      }
+
       const user = await this.usersRepository.find(data.user_id);
       if (!user) {
         throw new BadRequestException(
