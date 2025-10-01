@@ -1,5 +1,7 @@
 import { Category } from "src/domain/entities/categories/category";
 import { PrismaService } from "../../config/prisma.service";
+import { CreateCategoryDTO } from "src/domain/DTO/categories/create-category-DTO";
+import { UpdateCategoryDTO } from "src/domain/DTO/categories/update-category-DTO";
 import { CategoryResponseDTO } from "src/domain/DTO/categories/category-response-dto";
 import { FindCategoriesInputDTO } from "src/domain/DTO/categories/find-categories-input-DTO";
 import { GetCategoryResponseDTO } from "src/domain/DTO/categories/get-category-response-dto";
@@ -7,8 +9,6 @@ import { FindCategoryByIdInputDTO } from "src/domain/DTO/categories/find-categor
 import { FindCategoriesResponseDTO } from "src/domain/DTO/categories/find-categories-response-DTO";
 import { CategoriesRepositoryProtocol } from "./protocols/categories-repository-protocol";
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateCategoryDTO } from "src/domain/DTO/categories/create-category-DTO";
-import { UpdateCategoryDTO } from "src/domain/DTO/categories/update-category-DTO";
 
 @Injectable()
 export class CategoriesRepository implements CategoriesRepositoryProtocol {
@@ -90,6 +90,7 @@ export class CategoriesRepository implements CategoriesRepositoryProtocol {
             id: true,
             icon: true,
             name: true,
+            user_id: true,
           },
         });
 
