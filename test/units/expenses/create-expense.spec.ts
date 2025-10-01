@@ -108,4 +108,26 @@ describe("Create Expense UseCase", () => {
       "Erro na criação da despesa, tente novamente!"
     );
   });
+
+  it("should throw an exception when recurrence was different of NONE and has more than one installment", () => {
+    usersRepository.create("test-user-id");
+    categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
+    expensesRepository.create({
+      ...CreateExpenseInputMock,
+      recurrence: "MONTHLY",
+      total_installments: 2,
+      amount: new Decimal(200),
+    });
+
+    const result = useCase.create({
+      ...CreateExpenseInputMock,
+      recurrence: "MONTHLY",
+      total_installments: 2,
+      amount: new Decimal(200),
+    });
+
+    expect(result).rejects.toThrow(
+      "Não é possível cadastrar recorrência em uma despesa parcelada."
+    );
+  });
 });
