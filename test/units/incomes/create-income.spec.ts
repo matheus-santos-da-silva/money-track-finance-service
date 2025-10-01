@@ -108,4 +108,26 @@ describe("Create Income UseCase", () => {
       "Erro na criação da receita, tente novamente!"
     );
   });
+
+  it("should throw an exception when recurrence was different of NONE and has more than one installment", () => {
+    usersRepository.create("test-user-id");
+    categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
+    incomesRepository.create({
+      ...CreateIncomeInputMock,
+      recurrence: "MONTHLY",
+      total_installments: 2,
+      amount: new Decimal(200),
+    });
+
+    const result = useCase.create({
+      ...CreateIncomeInputMock,
+      recurrence: "MONTHLY",
+      total_installments: 2,
+      amount: new Decimal(200),
+    });
+
+    expect(result).rejects.toThrow(
+      "Não é possível cadastrar recorrência em uma receita parcelada."
+    );
+  });
 });

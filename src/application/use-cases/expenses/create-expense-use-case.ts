@@ -20,6 +20,12 @@ export class CreateExpenseUseCase implements CreateExpenseProtocol {
 
   async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
     try {
+      if (data?.recurrence !== "NONE" && data.total_installments > 1) {
+        throw new BadRequestException(
+          "Não é possível cadastrar recorrência em uma despesa parcelada."
+        );
+      }
+
       if (new Decimal(data.amount).equals(0)) {
         throw new BadRequestException(
           "Não é possível cadastrar uma despesa com o valor R$ 00,00."
