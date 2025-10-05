@@ -4,29 +4,29 @@ import { CategoryType } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const defaultCategories = [
-  { name: "Alimentação", icon: "red-food", type: CategoryType.EXPENSE },
-  { name: "Transporte", icon: "orange-transport", type: CategoryType.EXPENSE },
-  { name: "Moradia", icon: "cyan-home", type: CategoryType.EXPENSE },
-  { name: "Lazer", icon: "pink-leisure", type: CategoryType.EXPENSE },
-  { name: "Salário", icon: "lightgreen-wage", type: CategoryType.INCOME },
+  { name: "Alimentação", icon: "#E67171-food", type: CategoryType.EXPENSE },
+  { name: "Transporte", icon: "#FFA500-transport", type: CategoryType.EXPENSE },
+  { name: "Moradia", icon: "#08a4a7-home", type: CategoryType.EXPENSE },
+  { name: "Lazer", icon: "#FF91A4-leisure", type: CategoryType.EXPENSE },
+  { name: "Salário", icon: "#53D253-wage", type: CategoryType.INCOME },
   {
     name: "Renda Extra",
-    icon: "darkgreen-extraincome",
+    icon: "#135313-extraincome",
     type: CategoryType.INCOME,
   },
-  { name: "Viagem", icon: "purple-travel", type: CategoryType.EXPENSE },
+  { name: "Viagem", icon: "#9D00FF-travel", type: CategoryType.EXPENSE },
   {
     name: "Investimento",
-    icon: "orange-investment",
+    icon: "#FFA500-investment",
     type: CategoryType.EXPENSE,
   },
-  { name: "Educação", icon: "brown-education", type: CategoryType.EXPENSE },
+  { name: "Educação", icon: "#895129-education", type: CategoryType.EXPENSE },
   {
     name: "Assinaturas",
-    icon: "darkblue-subscriptions",
+    icon: "#111184-subscriptions",
     type: CategoryType.EXPENSE,
   },
-  { name: "Saúde", icon: "lightblue-health", type: CategoryType.EXPENSE },
+  { name: "Saúde", icon: "#56BFFF-health", type: CategoryType.EXPENSE },
 ];
 
 async function seed() {
