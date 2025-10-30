@@ -8,6 +8,7 @@ interface ExpenseProps {
   recurrence: Recurrence;
   category_id: string;
   total_installments: number;
+  current_installment: number;
   transaction_date?: Date;
   created_at: Date;
 }
@@ -20,6 +21,7 @@ export class Expense {
   category_id: string;
   recurrence?: Recurrence;
   total_installments: number;
+  current_installment: number;
   transaction_date: Date;
   created_at: Date;
 
@@ -30,6 +32,7 @@ export class Expense {
     description,
     category_id,
     total_installments,
+    current_installment,
     transaction_date,
     created_at,
   }: ExpenseProps) {
@@ -39,6 +42,7 @@ export class Expense {
     this.description = description;
     this.category_id = category_id;
     this.total_installments = total_installments;
+    this.current_installment = current_installment;
     this.transaction_date = transaction_date;
     this.created_at = created_at;
   }

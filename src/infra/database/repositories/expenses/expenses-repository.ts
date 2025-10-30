@@ -25,6 +25,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
             description: true,
             id: true,
             total_installments: true,
+            current_installment: true,
             recurrence: true,
             transaction_date: true,
             category: {
@@ -52,6 +53,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
             description: true,
             id: true,
             total_installments: true,
+            current_installment: true,
             transaction_date: true,
             category: {
               select: {
@@ -101,6 +103,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
           description: true,
           id: true,
           total_installments: true,
+          current_installment: true,
           user_id: true,
           transaction_date: true,
           category: {
@@ -132,6 +135,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
           description: true,
           id: true,
           total_installments: true,
+          current_installment: true,
         },
       });
 

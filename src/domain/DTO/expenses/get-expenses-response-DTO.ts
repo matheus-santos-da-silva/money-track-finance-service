@@ -7,6 +7,7 @@ export interface GetExpensesResponseDTO {
   description?: string;
   id: string;
   total_installments: number;
+  current_installment: number;
   recurrence: string;
   category: CategoryResponseDTO;
   transaction_date: Date;

@@ -1,4 +1,4 @@
-FROM node:alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN yarn prisma generate
 RUN yarn build
 
 # Stage 2: Produção
-FROM node:alpine
+FROM node:22-alpine
 
 WORKDIR /app
 

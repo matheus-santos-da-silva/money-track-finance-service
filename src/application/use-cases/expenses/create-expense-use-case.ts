@@ -6,13 +6,11 @@ import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/p
 import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
 import { CategoriesRepositoryProtocol } from "src/infra/database/repositories/categories/protocols/categories-repository-protocol";
-import { CreateExpenseServiceProtocol } from "src/domain/services/expenses/protocols/create-expense-service-protocol";
 import { BadRequestException, Injectable } from "@nestjs/common";
 
 @Injectable()
 export class CreateExpenseUseCase implements CreateExpenseProtocol {
   constructor(
-    private readonly service: CreateExpenseServiceProtocol,
     private readonly expenseRepository: ExpensesRepositoryProtocol,
     private readonly categoryRepository: CategoriesRepositoryProtocol,
     private readonly usersRepository: UsersRepositoryProtocol
@@ -44,29 +42,59 @@ export class CreateExpenseUseCase implements CreateExpenseProtocol {
         throw new BadRequestException("Categoria não existe, tente novamente!");
       }
 
-      const correctTransactionDate = data.transaction_date
-        ? data.transaction_date
-        : SetUTCDates(new Date());
       const correctCreatedAt = SetUTCDates(new Date());
+      const correctTransactionDate = data.transaction_date
+        ? SetUTCDates(new Date(data.transaction_date))
+        : SetUTCDates(new Date());
 
-      const expense = await this.service.create({
-        ...data,
-        transaction_date: correctTransactionDate,
-        created_at: correctCreatedAt,
-        amount: new Decimal(data.amount),
-        category_id: category.id,
-      });
+      if (data.total_installments > 1) {
+        let createdExpense: CreateExpenseResponseDTO = {
+          ...data,
+          id: "provisory",
+        };
 
-      const createdExpense = await this.expenseRepository.create(expense);
-      if (!createdExpense) {
-        throw new BadRequestException(
-          "Erro na criação da despesa, tente novamente!"
-        );
+        for (let i = 0; i < data.total_installments; i++) {
+          const installmentDate = correctTransactionDate;
+          if (i !== 0) {
+            installmentDate.setMonth(correctTransactionDate.getMonth() + 1);
+          }
+
+          const expense = await this.expenseRepository.create({
+            ...data,
+            transaction_date: installmentDate,
+            created_at: correctCreatedAt,
+            current_installment: i + 1,
+            amount: new Decimal(data.amount),
+            category_id: category.id,
+          });
+
+          if (i === 0) createdExpense = expense;
+        }
+
+        return {
+          ...createdExpense,
+          amount: new Decimal(createdExpense.amount).toNumber(),
+        };
+      } else {
+        const createdExpense = await this.expenseRepository.create({
+          ...data,
+          transaction_date: correctTransactionDate,
+          created_at: correctCreatedAt,
+          amount: new Decimal(data.amount),
+          category_id: category.id,
+        });
+
+        if (!createdExpense) {
+          throw new BadRequestException(
+            "Erro na criação da despesa, tente novamente!"
+          );
+        }
+
+        return {
+          ...createdExpense,
+          amount: new Decimal(createdExpense.amount).toNumber(),
+        };
       }
-      return {
-        ...createdExpense,
-        amount: new Decimal(createdExpense.amount).toNumber(),
-      };
     } catch (error) {
       throw error;
     }

@@ -1,5 +1,5 @@
-import { Recurrence } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
+import { Recurrence } from "@prisma/client";
 import { IsNotEmpty } from "class-validator";
 
 export class CreateTransactionDTO {
@@ -11,6 +11,9 @@ export class CreateTransactionDTO {
 
   @IsNotEmpty({ message: "O total de parcelas é obrigatório!" })
   total_installments: number;
+
+  @IsNotEmpty({ message: "Parcela atual é obrigatória!" })
+  current_installment: number;
 
   @IsNotEmpty({ message: "O id da categoria é obrigatório!" })
   category_id: string;
