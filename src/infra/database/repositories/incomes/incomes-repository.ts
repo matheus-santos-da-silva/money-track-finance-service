@@ -25,6 +25,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
             description: true,
             id: true,
             total_installments: true,
+            current_installment: true,
             recurrence: true,
             transaction_date: true,
             category: {
@@ -52,6 +53,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
             description: true,
             id: true,
             total_installments: true,
+            current_installment: true,
             recurrence: true,
             transaction_date: true,
             category: {
@@ -102,6 +104,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
           id: true,
           user_id: true,
           total_installments: true,
+          current_installment: true,
           transaction_date: true,
           category: {
             select: {
@@ -132,6 +135,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
           description: true,
           id: true,
           total_installments: true,
+          current_installment: true,
         },
       });
 

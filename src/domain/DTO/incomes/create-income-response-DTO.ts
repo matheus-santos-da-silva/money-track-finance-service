@@ -6,4 +6,5 @@ export interface CreateIncomeResponseDTO {
   description?: string;
   id: string;
   total_installments: number;
+  current_installment: number;
 }
