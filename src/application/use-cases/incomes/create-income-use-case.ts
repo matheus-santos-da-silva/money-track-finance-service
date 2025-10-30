@@ -64,7 +64,7 @@ export class CreateIncomeUseCase implements CreateIncomeProtocol {
             transaction_date: installmentDate,
             created_at: correctCreatedAt,
             current_installment: i + 1,
-            amount: new Decimal(data.amount),
+            amount: new Decimal(Number(data.amount) / data.total_installments),
             category_id: category.id,
           });
 
