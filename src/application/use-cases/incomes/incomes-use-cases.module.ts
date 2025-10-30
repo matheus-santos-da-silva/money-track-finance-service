@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common";
-import { IncomesServicesModule } from "src/domain/services/incomes/incomes-services.module";
 import { UsersRepositoriesModule } from "src/infra/database/repositories/users/users-repositories.module";
 import { IncomesRepositoriesModule } from "src/infra/database/repositories/incomes/incomes-repositories.module";
 import { CategoriesRepositoriesModule } from "src/infra/database/repositories/categories/categories-repositories.module";
@@ -19,7 +18,6 @@ import {
 @Module({
   imports: [
     IncomesRepositoriesModule,
-    IncomesServicesModule,
     CategoriesRepositoriesModule,
     UsersRepositoriesModule,
   ],
