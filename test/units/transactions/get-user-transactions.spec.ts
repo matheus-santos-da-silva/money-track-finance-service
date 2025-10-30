@@ -1,3 +1,4 @@
+import { SetUTCDates } from "src/shared/utils/set-utc-dates";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateIncomeInputMock } from "../../../test/mocks/incomes/create-income-input-mock";
 import { CreateExpenseInputMock } from "../../mocks/expenses/create-expense-input-mock";
@@ -98,11 +99,11 @@ describe("Get User Transactions UseCase", () => {
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     incomesRepository.create({
       ...CreateIncomeInputMock,
-      transaction_date: new Date("2025-04-21T12:00:00+00:00"),
+      transaction_date: SetUTCDates(new Date("2025-04-21T12:00:00+00:00")),
     });
     incomesRepository.create({
       ...CreateIncomeInputMock,
-      transaction_date: new Date("2025-04-22T12:00:00+00:00"),
+      transaction_date: SetUTCDates(new Date("2025-04-22T12:00:00+00:00")),
     });
 
     const result = useCase.find({

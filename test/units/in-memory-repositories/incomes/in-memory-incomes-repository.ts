@@ -7,6 +7,7 @@ import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-re
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
 import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
+import { SetUTCDates } from "src/shared/utils/set-utc-dates";
 
 export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
   incomes: Income[] = [];
@@ -83,7 +84,7 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
       created_at: new Date(),
       transaction_date: data.transaction_date
         ? data.transaction_date
-        : new Date(),
+        : SetUTCDates(new Date()),
     });
     return { ...data, id };
   }
