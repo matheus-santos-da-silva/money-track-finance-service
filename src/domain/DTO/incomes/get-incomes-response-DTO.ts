@@ -8,6 +8,8 @@ export interface GetIncomesResponseDTO {
   id: string;
   total_installments: number;
   current_installment: number;
+  installment_group_id?: string;
   recurrence: string;
   category: CategoryResponseDTO;
+  transaction_date: Date;
 }

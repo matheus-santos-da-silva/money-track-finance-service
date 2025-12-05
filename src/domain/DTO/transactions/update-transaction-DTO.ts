@@ -1,6 +1,12 @@
 import { Recurrence } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import { IsDateString, IsNumber, IsOptional, IsString } from "class-validator";
+import {
+  IsBoolean,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
 
 export class UpdateTransactionDTO {
   @IsOptional()
@@ -20,10 +26,18 @@ export class UpdateTransactionDTO {
   total_installments?: number;
 
   @IsOptional()
+  @IsString()
+  installment_group_id?: string;
+
+  @IsOptional()
   @IsString({ message: "A recorrência precisa ser string!" })
   recurrence?: Recurrence;
 
   @IsOptional()
   @IsDateString()
   transaction_date?: Date;
+
+  @IsOptional()
+  @IsBoolean()
+  applyToAll?: boolean;
 }
