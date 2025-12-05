@@ -42,6 +42,7 @@ model Expense {
   recurrence          Recurrence @default(NONE)
   total_installments  Int        @default(1)
   current_installment Int        @default(1)
+  installment_group_id String?
   transaction_date    DateTime   @default(now())
   created_at          DateTime   @default(now())
 
@@ -59,6 +60,7 @@ model Income {
   recurrence          Recurrence @default(NONE)
   total_installments  Int        @default(1)
   current_installment Int        @default(1)
+  installment_group_id String?
   transaction_date    DateTime   @default(now())
   created_at          DateTime   @default(now())
 
