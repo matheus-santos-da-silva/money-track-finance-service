@@ -55,14 +55,14 @@ describe("Create Expense UseCase", () => {
     expect(usersRepository).toBeDefined();
   });
 
-  it("should create a new expense", () => {
+  it("should create a new expense", async () => {
     usersRepository.create("test-user-id");
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
-    expensesRepository.create(CreateExpenseInputMock);
-    const result = useCase.create(CreateExpenseInputMock);
+    const result = await useCase.create(CreateExpenseInputMock);
 
-    expect(result).resolves.toMatchObject({
+    expect(result).toMatchObject({
       ...CreatedExpenseMock,
+      id: result.id,
       amount: 200,
     });
   });

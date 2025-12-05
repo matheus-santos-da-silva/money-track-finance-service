@@ -1,12 +1,13 @@
 import { Expense } from "src/domain/entities/expenses/expense";
+import { Decimal } from "@prisma/client/runtime/library";
+import { randomUUID } from "node:crypto";
+import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
 import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
 import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
-import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
-import { Decimal } from "@prisma/client/runtime/library";
 
 export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
   expenses: Expense[] = [];
@@ -63,9 +64,35 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
     };
   }
 
+  async updateByInstallmentsGroupId(
+    groupId: string,
+    data: UpdateTransactionDTO
+  ): Promise<void> {
+    for (let i = 0; i < this.expenses.length; i++) {
+      const expense = this.expenses[i];
+
+      if (expense.installment_group_id === groupId) {
+        this.expenses[i] = {
+          ...expense,
+          ...data,
+          amount: data.amount ? new Decimal(data.amount) : expense.amount,
+        };
+      }
+    }
+  }
+
   async delete(id: string): Promise<void> {
     const index = this.expenses.findIndex((expense) => expense.id === id);
-    if (index === -1) this.expenses.splice(index, 1);
+
+    if (index !== -1) {
+      this.expenses.splice(index, 1);
+    }
+  }
+
+  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+    this.expenses = this.expenses.filter(
+      (expense) => expense.installment_group_id !== groupId
+    );
   }
 
   async findById(id: string): Promise<GetExpenseByIdResponseDTO> {
@@ -80,7 +107,7 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
   }
 
   async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
-    const id = "test-expense-id";
+    const id = randomUUID();
     this.expenses.push({
       ...data,
       id,
