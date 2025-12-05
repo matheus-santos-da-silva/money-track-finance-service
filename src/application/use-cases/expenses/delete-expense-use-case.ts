@@ -11,7 +11,7 @@ import {
 export class DeleteExpenseUseCase implements DeleteExpenseProtocol {
   constructor(private readonly repository: ExpensesRepositoryProtocol) {}
 
-  async delete({ id, user_id }: DeleteExpenseDTO): Promise<void> {
+  async delete({ id, user_id, applyToAll }: DeleteExpenseDTO): Promise<void> {
     try {
       const expense = await this.repository.findById(id);
       if (!expense) throw new BadRequestException("Despesa não existe!");
@@ -21,7 +21,13 @@ export class DeleteExpenseUseCase implements DeleteExpenseProtocol {
         );
       }
 
-      await this.repository.delete(id);
+      if (expense.installment_group_id && applyToAll) {
+        await this.repository.deleteByInstallmentsGroupId(
+          expense.installment_group_id
+        );
+      } else {
+        await this.repository.delete(id);
+      }
     } catch (error) {
       throw error;
     }

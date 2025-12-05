@@ -11,7 +11,7 @@ import {
 export class DeleteIncomeUseCase implements DeleteIncomeProtocol {
   constructor(private readonly repository: IncomesRepositoryProtocol) {}
 
-  async delete({ id, user_id }: DeleteIncomeDTO): Promise<void> {
+  async delete({ id, user_id, applyToAll }: DeleteIncomeDTO): Promise<void> {
     try {
       const income = await this.repository.findById(id);
       if (!income) throw new BadRequestException("Receita não existe!");
@@ -21,7 +21,13 @@ export class DeleteIncomeUseCase implements DeleteIncomeProtocol {
         );
       }
 
-      await this.repository.delete(id);
+      if (income.installment_group_id && applyToAll) {
+        await this.repository.deleteByInstallmentsGroupId(
+          income.installment_group_id
+        );
+      } else {
+        await this.repository.delete(id);
+      }
     } catch (error) {
       throw error;
     }
