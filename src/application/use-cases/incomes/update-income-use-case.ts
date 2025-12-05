@@ -22,7 +22,37 @@ export class UpdateIncomeUseCase implements UpdateIncomeProtocol {
         );
       }
 
-      await this.repository.update(id, data);
+      const { applyToAll, ...withoutApplyToAll } = data;
+
+      if (applyToAll) {
+        if (!withoutApplyToAll.installment_group_id) {
+          throw new BadRequestException(
+            "Não foi possível alterar o parcelamento de todas as parcelas, tente novamente!"
+          );
+        }
+
+        if (withoutApplyToAll.transaction_date) {
+          throw new BadRequestException(
+            "Não é possível alterar a data de todas as parcelas. Altere individualmente ou refaça o parcelamento."
+          );
+        }
+
+        if (
+          withoutApplyToAll.recurrence ||
+          withoutApplyToAll.total_installments
+        ) {
+          throw new BadRequestException(
+            "Não é permitido alterar a recorrência ou o parcelamento de uma transação já existente."
+          );
+        }
+
+        await this.repository.updateByInstallmentsGroupId(
+          withoutApplyToAll.installment_group_id,
+          withoutApplyToAll
+        );
+      } else {
+        await this.repository.update(id, withoutApplyToAll);
+      }
     } catch (error) {
       throw error;
     }

@@ -1,7 +1,7 @@
 import { PrismaService } from "../../config/prisma.service";
 import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
-import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
+import { CreateDBTransactionDTO } from "src/domain/DTO/transactions/create-db-transaction-DTO";
 import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
 import { GetIncomeByIdResponseDTO } from "src/domain/DTO/incomes/get-income-by-id-response-DTO";
 import { IncomesRepositoryProtocol } from "./protocols/incomes-repository-protocol";
@@ -26,6 +26,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
             id: true,
             total_installments: true,
             current_installment: true,
+            installment_group_id: true,
             recurrence: true,
             transaction_date: true,
             category: {
@@ -54,6 +55,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
             id: true,
             total_installments: true,
             current_installment: true,
+            installment_group_id: true,
             recurrence: true,
             transaction_date: true,
             category: {
@@ -85,11 +87,37 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
+  async updateByInstallmentsGroupId(
+    groupId: string,
+    data: UpdateTransactionDTO
+  ): Promise<void> {
+    try {
+      await this.prisma.income.updateMany({
+        where: { installment_group_id: groupId },
+        data,
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao atualizar as receitas, tente novamente!"
+      );
+    }
+  }
+
   async delete(id: string): Promise<void> {
     try {
       await this.prisma.income.delete({ where: { id } });
     } catch (error) {
       throw new BadRequestException("Erro ao excluir a receita");
+    }
+  }
+
+  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+    try {
+      await this.prisma.income.deleteMany({
+        where: { installment_group_id: groupId },
+      });
+    } catch (error) {
+      throw new BadRequestException("Erro ao excluir as receitas");
     }
   }
 
@@ -105,6 +133,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
           user_id: true,
           total_installments: true,
           current_installment: true,
+          installment_group_id: true,
           transaction_date: true,
           category: {
             select: {
@@ -125,7 +154,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
-  async create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO> {
+  async create(data: CreateDBTransactionDTO): Promise<CreateIncomeResponseDTO> {
     try {
       const income = await this.prisma.income.create({
         data,

@@ -1,11 +1,11 @@
 import { Decimal } from "@prisma/client/runtime/library";
-import { BadRequestException, Injectable } from "@nestjs/common";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
 import { GetUserTransactionsProtocol } from "src/domain/use-cases-protocol/transactions/get-user-transactions";
 import { GetUserTransactionsResponseDTO } from "src/domain/DTO/transactions/get-user-transactions-response-DTO";
+import { BadRequestException, Injectable } from "@nestjs/common";
 
 @Injectable()
 export class GetUserTransactionsUseCase implements GetUserTransactionsProtocol {
@@ -25,9 +25,10 @@ export class GetUserTransactionsUseCase implements GetUserTransactionsProtocol {
       if (!user) throw new BadRequestException("Usuário não existe!");
 
       if (start_date && end_date) {
-        end_date.setDate(end_date.getDate() + 1);
-        end_date.setHours(20, 59, 59);
+        start_date.setUTCHours(0, 0, 0, 0);
+        end_date.setUTCHours(23, 59, 59, 999);
       }
+
       const incomes = await this.incomesRepository.find({
         user_id,
         start_date,

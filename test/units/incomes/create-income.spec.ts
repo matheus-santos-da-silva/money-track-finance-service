@@ -55,14 +55,14 @@ describe("Create Income UseCase", () => {
     expect(usersRepository).toBeDefined();
   });
 
-  it("should create a new income", () => {
+  it("should create a new income", async () => {
     usersRepository.create("test-user-id");
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
-    incomesRepository.create(CreateIncomeInputMock);
-    const result = useCase.create(CreateIncomeInputMock);
+    const result = await useCase.create(CreateIncomeInputMock);
 
-    expect(result).resolves.toMatchObject({
+    expect(result).toMatchObject({
       ...CreateIncomeInputMock,
+      id: result.id,
       transaction_date: SetUTCDates(
         new Date(CreateIncomeInputMock.transaction_date)
       ),

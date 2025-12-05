@@ -31,19 +31,19 @@ describe("Get Expense By Id UseCase", () => {
     expect(expensesRepository).toBeDefined();
   });
 
-  it("should return a expense", () => {
-    expensesRepository.create(CreateExpenseInputMock);
-    const result = useCase.findById("test-expense-id");
+  it("should return a expense", async () => {
+    const expense = await expensesRepository.create(CreateExpenseInputMock);
+    const result = useCase.findById(expense.id);
 
     expect(result).resolves.toMatchObject({
       ...CreatedExpenseMock,
+      id: expense.id,
       amount: 200,
     });
   });
 
   it("should throw an error when expense not exists", () => {
     const result = useCase.findById("test-expense-id");
-
     expect(result).rejects.toThrow("Despesa não existe, tente novamente!");
   });
 });

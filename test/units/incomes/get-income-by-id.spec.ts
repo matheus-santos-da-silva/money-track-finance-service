@@ -31,19 +31,19 @@ describe("Get Income By Id UseCase", () => {
     expect(incomesRepository).toBeDefined();
   });
 
-  it("should return a income", () => {
-    incomesRepository.create(CreateIncomeInputMock);
-    const result = useCase.findById("test-income-id");
+  it("should return a income", async () => {
+    const income = await incomesRepository.create(CreateIncomeInputMock);
+    const result = useCase.findById(income.id);
 
     expect(result).resolves.toMatchObject({
       ...CreatedIncomeMock,
+      id: income.id,
       amount: 200,
     });
   });
 
   it("should thrown an error when income not exists", () => {
     const result = useCase.findById("test-income-id");
-
     expect(result).rejects.toThrow("Receita não existe, tente novamente!");
   });
 });

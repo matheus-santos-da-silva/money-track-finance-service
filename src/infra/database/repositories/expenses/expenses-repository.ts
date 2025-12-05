@@ -1,6 +1,6 @@
 import { PrismaService } from "../../config/prisma.service";
-import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
+import { CreateDBTransactionDTO } from "src/domain/DTO/transactions/create-db-transaction-DTO";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
 import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
 import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
@@ -26,6 +26,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
             id: true,
             total_installments: true,
             current_installment: true,
+            installment_group_id: true,
             recurrence: true,
             transaction_date: true,
             category: {
@@ -55,6 +56,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
             total_installments: true,
             current_installment: true,
             transaction_date: true,
+            installment_group_id: true,
             category: {
               select: {
                 name: true,
@@ -85,11 +87,37 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
+  async updateByInstallmentsGroupId(
+    groupId: string,
+    data: UpdateTransactionDTO
+  ): Promise<void> {
+    try {
+      await this.prisma.expense.updateMany({
+        where: { installment_group_id: groupId },
+        data,
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao atualizar as despesas, tente novamente!"
+      );
+    }
+  }
+
   async delete(id: string): Promise<void> {
     try {
       await this.prisma.expense.delete({ where: { id } });
     } catch (error) {
       throw new BadRequestException("Erro ao excluir a despesa");
+    }
+  }
+
+  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+    try {
+      await this.prisma.expense.deleteMany({
+        where: { installment_group_id: groupId },
+      });
+    } catch (error) {
+      throw new BadRequestException("Erro ao excluir as despesas");
     }
   }
 
@@ -104,6 +132,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
           id: true,
           total_installments: true,
           current_installment: true,
+          installment_group_id: true,
           user_id: true,
           transaction_date: true,
           category: {
@@ -125,7 +154,9 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
-  async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
+  async create(
+    data: CreateDBTransactionDTO
+  ): Promise<CreateExpenseResponseDTO> {
     try {
       const expense = await this.prisma.expense.create({
         data,

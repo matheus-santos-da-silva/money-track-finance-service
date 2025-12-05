@@ -9,6 +9,7 @@ interface IncomeProps {
   category_id: string;
   total_installments: number;
   current_installment: number;
+  installment_group_id?: string;
   transaction_date?: Date;
   created_at: Date;
 }
@@ -22,6 +23,7 @@ export class Income {
   recurrence?: Recurrence;
   total_installments: number;
   current_installment: number;
+  installment_group_id?: string;
   transaction_date: Date;
   created_at: Date;
 
@@ -33,6 +35,7 @@ export class Income {
     category_id,
     total_installments,
     current_installment,
+    installment_group_id,
     transaction_date,
     created_at,
   }: IncomeProps) {
@@ -43,6 +46,7 @@ export class Income {
     this.category_id = category_id;
     this.total_installments = total_installments;
     this.current_installment = current_installment;
+    this.installment_group_id = installment_group_id;
     this.transaction_date = transaction_date;
     this.created_at = created_at;
   }

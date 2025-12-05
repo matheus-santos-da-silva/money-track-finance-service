@@ -1,4 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
+import { randomUUID } from "node:crypto";
 import { SetUTCDates } from "src/shared/utils/set-utc-dates";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { CreateIncomeProtocol } from "src/domain/use-cases-protocol/incomes";
@@ -53,6 +54,8 @@ export class CreateIncomeUseCase implements CreateIncomeProtocol {
           id: "provisory",
         };
 
+        const installmentGroupId = randomUUID();
+
         for (let i = 0; i < data.total_installments; i++) {
           const installmentDate = correctTransactionDate;
           if (i !== 0) {
@@ -64,6 +67,7 @@ export class CreateIncomeUseCase implements CreateIncomeProtocol {
             transaction_date: installmentDate,
             created_at: correctCreatedAt,
             current_installment: i + 1,
+            installment_group_id: installmentGroupId,
             amount: new Decimal(Number(data.amount) / data.total_installments),
             category_id: category.id,
           });

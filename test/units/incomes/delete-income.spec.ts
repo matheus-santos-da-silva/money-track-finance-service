@@ -31,10 +31,66 @@ describe("Delete Income UseCase", () => {
   });
 
   it("should delete a income", async () => {
-    incomesRepository.create(CreateIncomeInputMock);
+    const income = await incomesRepository.create(CreateIncomeInputMock);
     await expect(
-      useCase.delete({ id: "test-income-id", user_id: "test-user-id" })
+      useCase.delete({ id: income.id, user_id: "test-user-id" })
     ).resolves.toBeUndefined();
+  });
+
+  it("should delete a installmentGroup when income has total_installments greater than one and applyToAll is true", async () => {
+    const income1 = await incomesRepository.create({
+      ...CreateIncomeInputMock,
+      total_installments: 2,
+      current_installment: 1,
+      installment_group_id: "test-installment_group_id",
+    });
+
+    const income2 = await incomesRepository.create({
+      ...CreateIncomeInputMock,
+      total_installments: 2,
+      current_installment: 2,
+      installment_group_id: "test-installment_group_id",
+    });
+
+    await useCase.delete({
+      id: income1.id,
+      user_id: "test-user-id",
+      applyToAll: true,
+    });
+
+    const updatedIncome1 = await incomesRepository.findById(income1.id);
+    const updatedIncome2 = await incomesRepository.findById(income2.id);
+
+    expect(updatedIncome1).toBeUndefined();
+    expect(updatedIncome2).toBeUndefined();
+  });
+
+  it("should delete only one income when income has total_installments greater than one and applyToAll is false", async () => {
+    const income1 = await incomesRepository.create({
+      ...CreateIncomeInputMock,
+      total_installments: 2,
+      current_installment: 1,
+      installment_group_id: "test-installment_group_id",
+    });
+
+    const income2 = await incomesRepository.create({
+      ...CreateIncomeInputMock,
+      total_installments: 2,
+      current_installment: 2,
+      installment_group_id: "test-installment_group_id",
+    });
+
+    await useCase.delete({
+      id: income1.id,
+      user_id: "test-user-id",
+      applyToAll: false,
+    });
+
+    const existsIncome1 = await incomesRepository.findById(income1.id);
+    const existsIncome2 = await incomesRepository.findById(income2.id);
+
+    expect(existsIncome1).toBeUndefined();
+    expect(existsIncome2).toBeDefined();
   });
 
   it("should throw an error if income does not exists", async () => {
@@ -44,9 +100,9 @@ describe("Delete Income UseCase", () => {
   });
 
   it("should throw an error if the user-id does not match the income owner's user-id", async () => {
-    incomesRepository.create(CreateIncomeInputMock);
+    const income = await incomesRepository.create(CreateIncomeInputMock);
     await expect(
-      useCase.delete({ id: "test-income-id", user_id: "test-invalid-user-id" })
+      useCase.delete({ id: income.id, user_id: "test-invalid-user-id" })
     ).rejects.toThrow(
       "Esta receita possui outro dono, tente novamente com outra!"
     );

@@ -1,5 +1,7 @@
 import { Income } from "src/domain/entities/incomes/income";
 import { Decimal } from "@prisma/client/runtime/library";
+import { randomUUID } from "node:crypto";
+import { SetUTCDates } from "src/shared/utils/set-utc-dates";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
@@ -7,7 +9,6 @@ import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-re
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
 import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
 import { GetUserTransactionsInputDTO } from "src/domain/DTO/transactions/get-transactions-input-DTO";
-import { SetUTCDates } from "src/shared/utils/set-utc-dates";
 
 export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
   incomes: Income[] = [];
@@ -60,9 +61,32 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
     };
   }
 
+  async updateByInstallmentsGroupId(
+    groupId: string,
+    data: UpdateTransactionDTO
+  ): Promise<void> {
+    for (let i = 0; i < this.incomes.length; i++) {
+      const income = this.incomes[i];
+
+      if (income.installment_group_id === groupId) {
+        this.incomes[i] = {
+          ...income,
+          ...data,
+          amount: data.amount ? new Decimal(data.amount) : income.amount,
+        };
+      }
+    }
+  }
+
   async delete(id: string): Promise<void> {
     const index = this.incomes.findIndex((income) => income.id === id);
-    if (index === -1) this.incomes.splice(index, 1);
+    if (index !== -1) this.incomes.splice(index, 1);
+  }
+
+  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+    this.incomes = this.incomes.filter(
+      (income) => income.installment_group_id !== groupId
+    );
   }
 
   async findById(id: string): Promise<GetExpenseByIdResponseDTO> {
@@ -77,7 +101,7 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
   }
 
   async create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO> {
-    const id = "test-income-id";
+    const id = randomUUID();
     this.incomes.push({
       ...data,
       id,
