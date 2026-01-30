@@ -1,8 +1,9 @@
+import { Prisma } from "@prisma/client";
 import { Recurrence } from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime/library";
 import {
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
@@ -11,7 +12,7 @@ import {
 export class UpdateTransactionDTO {
   @IsOptional()
   @IsNumber()
-  amount?: Decimal | number;
+  amount?: Prisma.Decimal | number;
 
   @IsOptional()
   @IsString({ message: "O Id da categoria precisa ser string!" })
@@ -30,7 +31,9 @@ export class UpdateTransactionDTO {
   installment_group_id?: string;
 
   @IsOptional()
-  @IsString({ message: "A recorrência precisa ser string!" })
+  @IsEnum(Recurrence, {
+    message: "A recorrência deve ser MONTHLY, YEARLY ou NONE",
+  })
   recurrence?: Recurrence;
 
   @IsOptional()

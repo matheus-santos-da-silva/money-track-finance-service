@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
 import { GetExpenseByIdProtocol } from "src/domain/use-cases-protocol/expenses/get-expense-by-id";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
@@ -15,7 +15,7 @@ export class GetExpenseByIdUseCase implements GetExpenseByIdProtocol {
         throw new BadRequestException("Despesa não existe, tente novamente!");
       }
 
-      return { ...expense, amount: new Decimal(expense.amount).toNumber() };
+      return { ...expense, amount: Prisma.Decimal(expense.amount).toNumber() };
     } catch (error) {
       throw error;
     }

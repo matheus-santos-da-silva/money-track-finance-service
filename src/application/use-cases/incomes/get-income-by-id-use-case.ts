@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { GetIncomeByIdProtocol } from "src/domain/use-cases-protocol/incomes/get-income-by-id";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
@@ -15,7 +15,7 @@ export class GetIncomeByIdUseCase implements GetIncomeByIdProtocol {
         throw new BadRequestException("Receita não existe, tente novamente!");
       }
 
-      return { ...income, amount: new Decimal(income.amount).toNumber() };
+      return { ...income, amount: Prisma.Decimal(income.amount).toNumber() };
     } catch (error) {
       throw error;
     }

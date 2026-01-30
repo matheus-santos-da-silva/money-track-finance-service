@@ -1,10 +1,20 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Plan, PrismaClient } from "@prisma/client";
 import { CategoryType } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const prisma = new PrismaClient({ adapter });
+
+const trialEndsAt = new Date(new Date());
+trialEndsAt.setDate(trialEndsAt.getDate() + 7);
 
 const testUser = {
   id: "test-user-id",
+  plan: Plan.FREE,
+  trialEndsAt: trialEndsAt,
 };
 
 const testCategories = [

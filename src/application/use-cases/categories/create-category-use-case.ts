@@ -9,13 +9,19 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 export class CreateCategoryUseCase implements CreateCategoryProtocol {
   constructor(
     private readonly repository: CategoriesRepositoryProtocol,
-    private readonly usersRepository: UsersRepositoryProtocol
+    private readonly usersRepository: UsersRepositoryProtocol,
   ) {}
 
   async create(user_id: string, data: CreateCategoryDTO): Promise<Category> {
     try {
       const user = await this.usersRepository.find(user_id);
       if (!user) throw new BadRequestException("Usuário não existe!");
+
+      if (user.plan === "FREE" && user.trialEndsAt < new Date()) {
+        throw new BadRequestException(
+          "Não é possível cadastrar uma categoria para um usuário com plano gratuito.",
+        );
+      }
 
       const category = await this.repository.create(user_id, data);
       if (!category) throw new BadRequestException("Erro ao criar a categoria");

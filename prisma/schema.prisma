@@ -5,14 +5,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
-  id         String     @id @default(uuid())
-  categories Category[]
-  expenses   Expense[]
-  incomes    Income[]
+  id          String     @id @default(uuid())
+  plan        Plan       @default(FREE)
+  trialEndsAt DateTime
+  categories  Category[]
+  expenses    Expense[]
+  incomes     Income[]
 
   @@map("users")
 }
@@ -32,37 +33,37 @@ model Category {
 }
 
 model Expense {
-  id                  String     @id @default(uuid())
-  user_id             String
-  user                User       @relation(fields: [user_id], references: [id])
-  category_id         String
-  category            Category   @relation(fields: [category_id], references: [id])
-  amount              Decimal
-  description         String?
-  recurrence          Recurrence @default(NONE)
-  total_installments  Int        @default(1)
-  current_installment Int        @default(1)
+  id                   String     @id @default(uuid())
+  user_id              String
+  user                 User       @relation(fields: [user_id], references: [id])
+  category_id          String
+  category             Category   @relation(fields: [category_id], references: [id])
+  amount               Decimal
+  description          String?
+  recurrence           Recurrence @default(NONE)
+  total_installments   Int        @default(1)
+  current_installment  Int        @default(1)
   installment_group_id String?
-  transaction_date    DateTime   @default(now())
-  created_at          DateTime   @default(now())
+  transaction_date     DateTime   @default(now())
+  created_at           DateTime   @default(now())
 
   @@map("expenses")
 }
 
 model Income {
-  id                  String     @id @default(uuid())
-  user_id             String
-  user                User       @relation(fields: [user_id], references: [id])
-  category_id         String
-  category            Category   @relation(fields: [category_id], references: [id])
-  amount              Decimal
-  description         String?
-  recurrence          Recurrence @default(NONE)
-  total_installments  Int        @default(1)
-  current_installment Int        @default(1)
+  id                   String     @id @default(uuid())
+  user_id              String
+  user                 User       @relation(fields: [user_id], references: [id])
+  category_id          String
+  category             Category   @relation(fields: [category_id], references: [id])
+  amount               Decimal
+  description          String?
+  recurrence           Recurrence @default(NONE)
+  total_installments   Int        @default(1)
+  current_installment  Int        @default(1)
   installment_group_id String?
-  transaction_date    DateTime   @default(now())
-  created_at          DateTime   @default(now())
+  transaction_date     DateTime   @default(now())
+  created_at           DateTime   @default(now())
 
   @@map("incomes")
 }
@@ -76,4 +77,10 @@ enum Recurrence {
 enum CategoryType {
   INCOME
   EXPENSE
+}
+
+enum Plan {
+  FREE
+  TRIAL
+  PREMIUM
 }
