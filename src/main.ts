@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { AppModule } from "./app.module";
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
@@ -10,7 +11,7 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
-    })
+    }),
   );
 
   app.connectMicroservice<MicroserviceOptions>({

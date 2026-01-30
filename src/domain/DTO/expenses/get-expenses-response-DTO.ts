@@ -1,8 +1,8 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { CategoryResponseDTO } from "../categories/category-response-dto";
 
 export interface GetExpensesResponseDTO {
-  amount: Decimal | number;
+  amount: Prisma.Decimal | number;
   category_id: string;
   description?: string;
   id: string;

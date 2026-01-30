@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
@@ -43,12 +43,12 @@ export class GetUserTransactionsUseCase implements GetUserTransactionsProtocol {
 
       const correctIncomes = incomes.map((income) => ({
         ...income,
-        amount: new Decimal(income.amount).toNumber(),
+        amount: Prisma.Decimal(income.amount).toNumber(),
       }));
 
       const correctExpenses = expenses.map((expense) => ({
         ...expense,
-        amount: new Decimal(expense.amount).toNumber(),
+        amount: Prisma.Decimal(expense.amount).toNumber(),
       }));
 
       return { incomes: correctIncomes, expenses: correctExpenses };

@@ -1,9 +1,9 @@
 import { Recurrence } from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 
 interface ExpenseProps {
   user_id: string;
-  amount: Decimal;
+  amount: Prisma.Decimal;
   description?: string;
   recurrence: Recurrence;
   category_id: string;
@@ -17,7 +17,7 @@ interface ExpenseProps {
 export class Expense {
   id: string;
   user_id: string;
-  amount: Decimal;
+  amount: Prisma.Decimal;
   description?: string;
   category_id: string;
   recurrence?: Recurrence;
