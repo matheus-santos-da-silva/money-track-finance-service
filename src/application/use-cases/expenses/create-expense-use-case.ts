@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { SetUTCDates } from "src/shared/utils/set-utc-dates";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
@@ -14,27 +14,33 @@ export class CreateExpenseUseCase implements CreateExpenseProtocol {
   constructor(
     private readonly expenseRepository: ExpensesRepositoryProtocol,
     private readonly categoryRepository: CategoriesRepositoryProtocol,
-    private readonly usersRepository: UsersRepositoryProtocol
+    private readonly usersRepository: UsersRepositoryProtocol,
   ) {}
 
   async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
     try {
       if (data?.recurrence !== "NONE" && data.total_installments > 1) {
         throw new BadRequestException(
-          "Não é possível cadastrar recorrência em uma despesa parcelada."
+          "Não é possível cadastrar recorrência em uma despesa parcelada.",
         );
       }
 
-      if (new Decimal(data.amount).equals(0)) {
+      if (Prisma.Decimal(data.amount).equals(0)) {
         throw new BadRequestException(
-          "Não é possível cadastrar uma despesa com o valor R$ 00,00."
+          "Não é possível cadastrar uma despesa com o valor R$ 00,00.",
         );
       }
 
       const user = await this.usersRepository.find(data.user_id);
       if (!user) {
         throw new BadRequestException(
-          "Não foi possível cadastrar a Despesa. Usuário não existe!"
+          "Não foi possível cadastrar a Despesa. Usuário não existe!",
+        );
+      }
+
+      if (user.plan === "FREE" && user.trialEndsAt < new Date()) {
+        throw new BadRequestException(
+          "Não é possível cadastrar uma despesa para um usuário com plano gratuito.",
         );
       }
 
@@ -68,7 +74,9 @@ export class CreateExpenseUseCase implements CreateExpenseProtocol {
             created_at: correctCreatedAt,
             current_installment: i + 1,
             installment_group_id: installmentGroupId,
-            amount: new Decimal(Number(data.amount) / data.total_installments),
+            amount: Prisma.Decimal(
+              Number(data.amount) / data.total_installments,
+            ),
             category_id: category.id,
           });
 
@@ -77,26 +85,26 @@ export class CreateExpenseUseCase implements CreateExpenseProtocol {
 
         return {
           ...createdExpense,
-          amount: new Decimal(createdExpense.amount).toNumber(),
+          amount: Prisma.Decimal(createdExpense.amount).toNumber(),
         };
       } else {
         const createdExpense = await this.expenseRepository.create({
           ...data,
           transaction_date: correctTransactionDate,
           created_at: correctCreatedAt,
-          amount: new Decimal(data.amount),
+          amount: Prisma.Decimal(data.amount),
           category_id: category.id,
         });
 
         if (!createdExpense) {
           throw new BadRequestException(
-            "Erro na criação da despesa, tente novamente!"
+            "Erro na criação da despesa, tente novamente!",
           );
         }
 
         return {
           ...createdExpense,
-          amount: new Decimal(createdExpense.amount).toNumber(),
+          amount: Prisma.Decimal(createdExpense.amount).toNumber(),
         };
       }
     } catch (error) {
