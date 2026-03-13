@@ -17,4 +17,8 @@ export class UsersRepository implements UsersRepositoryProtocol {
     const user = this.prisma.user.create({ data: { id, plan, trialEndsAt } });
     return user;
   }
+
+  async updatePlan(id: string, plan: Plan): Promise<void> {
+    await this.prisma.user.update({ where: { id }, data: { plan } });
+  }
 }
