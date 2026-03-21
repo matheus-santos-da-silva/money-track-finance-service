@@ -7,7 +7,7 @@ COPY package.json yarn.lock ./
 RUN yarn install
 COPY . .
 
-RUN yarn prisma generate
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" yarn prisma generate
 RUN yarn build
 
 # Stage 2: Produção
