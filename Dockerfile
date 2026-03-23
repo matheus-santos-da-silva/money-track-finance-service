@@ -21,8 +21,6 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./
 
-RUN yarn prisma generate
-
 EXPOSE 3001
 
 CMD ["yarn", "start:prod"]
