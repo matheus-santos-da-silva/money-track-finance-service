@@ -25,6 +25,7 @@ async function bootstrap() {
       },
     },
   });
+  app.setGlobalPrefix('finance');
   await app.startAllMicroservices();
   await app.listen(process.env.PORT ?? 3001);
 }
