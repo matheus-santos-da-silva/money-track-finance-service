@@ -1,8 +1,8 @@
-import * as request from "supertest";
+import request from "supertest";
 import { AppModule } from "../../../src/app.module";
 import { PrismaService } from "../../../src/infra/database/config/prisma.service";
 import { INestApplication } from "@nestjs/common";
-import { getTestAuthToken } from "../../../src/shared/utils/test-auth";
+import { getTestAuthToken } from "../../helpers/test-auth";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateExpenseCategoryInputMock } from "../../mocks/categories/create-category-input-mock";
 

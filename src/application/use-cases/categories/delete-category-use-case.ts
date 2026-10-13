@@ -19,7 +19,13 @@ export class DeleteCategoryUseCase implements DeleteCategoryProtocol {
       const category = await this.repository.findById(data);
       if (!category) throw new BadRequestException("Categoria não encontrada!");
 
-      await this.repository.delete(data);
+      if (category.user_id !== data.user_id) {
+        throw new BadRequestException(
+          "Não é possível excluir uma categoria padrão!",
+        );
+      }
+
+      await this.repository.archive(data);
     } catch (error) {
       throw error;
     }

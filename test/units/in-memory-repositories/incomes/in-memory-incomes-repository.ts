@@ -1,8 +1,8 @@
 import { Income } from "src/domain/entities/incomes/income";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
 import { randomUUID } from "node:crypto";
-import { SetUTCDates } from "src/shared/utils/set-utc-dates";
-import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
+import { toCalendarDate } from "src/shared/transactions/calendar-date";
+import { CreateDBTransactionDTO } from "src/domain/DTO/transactions/create-db-transaction-DTO";
 import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
 import { GetIncomesResponseDTO } from "src/domain/DTO/incomes/get-incomes-response-DTO";
 import { CreateIncomeResponseDTO } from "src/domain/DTO/incomes/create-income-response-DTO";
@@ -56,22 +56,23 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
 
     this.incomes[incomeIndex] = {
       ...currentIncome,
-      ...data,
+      ...(data as Partial<Income>),
       amount: data.amount ? new Decimal(data.amount) : currentIncome.amount,
     };
   }
 
   async updateByInstallmentsGroupId(
     groupId: string,
+    user_id: string,
     data: UpdateTransactionDTO
   ): Promise<void> {
     for (let i = 0; i < this.incomes.length; i++) {
       const income = this.incomes[i];
 
-      if (income.installment_group_id === groupId) {
+      if (income.installment_group_id === groupId && income.user_id === user_id) {
         this.incomes[i] = {
           ...income,
-          ...data,
+          ...(data as Partial<Income>),
           amount: data.amount ? new Decimal(data.amount) : income.amount,
         };
       }
@@ -83,9 +84,13 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
     if (index !== -1) this.incomes.splice(index, 1);
   }
 
-  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+  async deleteByInstallmentsGroupId(
+    groupId: string,
+    user_id: string
+  ): Promise<void> {
     this.incomes = this.incomes.filter(
-      (income) => income.installment_group_id !== groupId
+      (income) =>
+        income.installment_group_id !== groupId || income.user_id !== user_id
     );
   }
 
@@ -100,7 +105,15 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
-  async create(data: CreateTransactionDTO): Promise<CreateIncomeResponseDTO> {
+  async createInstallments(
+    rows: CreateDBTransactionDTO[]
+  ): Promise<CreateIncomeResponseDTO[]> {
+    const created: CreateIncomeResponseDTO[] = [];
+    for (const row of rows) created.push(await this.create(row));
+    return created;
+  }
+
+  async create(data: CreateDBTransactionDTO): Promise<CreateIncomeResponseDTO> {
     const id = randomUUID();
     this.incomes.push({
       ...data,
@@ -108,7 +121,7 @@ export class InMemoryIncomesRepository implements IncomesRepositoryProtocol {
       created_at: new Date(),
       transaction_date: data.transaction_date
         ? data.transaction_date
-        : SetUTCDates(new Date()),
+        : toCalendarDate(new Date()),
     });
     return { ...data, id };
   }

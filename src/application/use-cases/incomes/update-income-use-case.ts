@@ -1,60 +1,75 @@
+import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
+import { assertCanWrite } from "src/shared/transactions/plan-policy";
+import { prepareUpdate } from "src/shared/transactions/update-rules";
 import { UpdateIncomeDTO } from "src/domain/DTO/incomes/update-income-DTO";
 import { UpdateIncomeProtocol } from "src/domain/use-cases-protocol/incomes/update-income";
+import { ensureCategoryForKind } from "src/application/services/ensure-category-for-kind";
+import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
+import { CategoriesRepositoryProtocol } from "src/infra/database/repositories/categories/protocols/categories-repository-protocol";
+import { RecurringSeriesRepositoryProtocol } from "src/infra/database/repositories/recurring-series/protocols/recurring-series-repository-protocol";
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
-  UnauthorizedException,
 } from "@nestjs/common";
 
 @Injectable()
 export class UpdateIncomeUseCase implements UpdateIncomeProtocol {
-  constructor(private readonly repository: IncomesRepositoryProtocol) {}
+  constructor(
+    private readonly repository: IncomesRepositoryProtocol,
+    private readonly categoryRepository: CategoriesRepositoryProtocol,
+    private readonly usersRepository: UsersRepositoryProtocol,
+    private readonly seriesRepository: RecurringSeriesRepositoryProtocol,
+  ) {}
 
   async update({ id, user_id, data }: UpdateIncomeDTO): Promise<void> {
-    try {
-      const income = await this.repository.findById(id);
+    const income = await this.repository.findById(id);
 
-      if (!income) throw new BadRequestException("Receita não existe!");
-      if (income.user_id !== user_id) {
-        throw new UnauthorizedException(
-          "Esta receita possui outro dono, tente novamente com outra!"
-        );
-      }
+    if (!income) throw new BadRequestException("Receita não existe!");
+    if (income.user_id !== user_id) {
+      throw new ForbiddenException(
+        "Esta receita possui outro dono, tente novamente com outra!",
+      );
+    }
 
-      const { applyToAll, ...withoutApplyToAll } = data;
+    // Plano gratuito com trial vencido é somente leitura.
+    const user = await this.usersRepository.find(user_id);
+    if (!user) throw new BadRequestException("Usuário não existe!");
+    assertCanWrite(user, "editar uma receita");
 
-      if (applyToAll) {
-        if (!withoutApplyToAll.installment_group_id) {
-          throw new BadRequestException(
-            "Não foi possível alterar o parcelamento de todas as parcelas, tente novamente!"
-          );
-        }
+    const { scope, changes } = prepareUpdate(income, data as UpdateTransactionDTO);
 
-        if (withoutApplyToAll.transaction_date) {
-          throw new BadRequestException(
-            "Não é possível alterar a data de todas as parcelas. Altere individualmente ou refaça o parcelamento."
-          );
-        }
+    if (changes.category_id && changes.category_id !== income.category_id) {
+      await ensureCategoryForKind(
+        this.categoryRepository,
+        user_id,
+        changes.category_id,
+        "INCOME",
+      );
+    }
 
-        if (
-          withoutApplyToAll.recurrence ||
-          withoutApplyToAll.total_installments
-        ) {
-          throw new BadRequestException(
-            "Não é permitido alterar a recorrência ou o parcelamento de uma transação já existente."
-          );
-        }
-
-        await this.repository.updateByInstallmentsGroupId(
-          withoutApplyToAll.installment_group_id,
-          withoutApplyToAll
-        );
-      } else {
-        await this.repository.update(id, withoutApplyToAll);
-      }
-    } catch (error) {
-      throw error;
+    if (scope === "series") {
+      // "Esta e as seguintes": o molde da série também muda, para as próximas ocorrências.
+      await this.seriesRepository.updateFollowing({
+        user_id,
+        series_id: income.recurrence_series_id,
+        kind: "INCOME",
+        from_date: income.transaction_date,
+        changes: {
+          amount: changes.amount,
+          category_id: changes.category_id,
+          description: changes.description,
+        },
+      });
+    } else if (scope === "installments") {
+      await this.repository.updateByInstallmentsGroupId(
+        income.installment_group_id,
+        user_id,
+        changes,
+      );
+    } else {
+      await this.repository.update(id, changes);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
 import { Recurrence } from "@prisma/client";
 
 export const CreateIncomeInputMock = {
@@ -11,3 +11,7 @@ export const CreateIncomeInputMock = {
   description: "Test Income",
   transaction_date: new Date(),
 };
+
+// Corpo HTTP: sem dono, o servidor usa o usuário do token.
+const { user_id: _userId, ...IncomeBody } = CreateIncomeInputMock;
+export const CreateIncomeBodyMock = IncomeBody;

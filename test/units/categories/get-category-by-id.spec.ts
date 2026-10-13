@@ -42,7 +42,7 @@ describe("Get Category By Id", () => {
   });
 
   it("should return a category", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     const result = useCase.findById({
       user_id: "test-user-id",
@@ -62,7 +62,7 @@ describe("Get Category By Id", () => {
   });
 
   it("should throw an error when category not exists", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     const result = useCase.findById({
       user_id: "test-user-id",
       category_id: "test-category-id",

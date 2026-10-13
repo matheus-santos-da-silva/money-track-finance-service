@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { recurringSeriesProvider } from "../helpers/recurring-series-provider";
 import { DeleteIncomeUseCase } from "../../../src/application/use-cases/incomes";
 import { CreateIncomeInputMock } from "../../mocks/incomes/create-income-input-mock";
 import { IncomesRepositoryProtocol } from "../../../src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
@@ -12,6 +13,7 @@ describe("Delete Income UseCase", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DeleteIncomeUseCase,
+        recurringSeriesProvider,
         {
           provide: IncomesRepositoryProtocol,
           useClass: InMemoryIncomesRepository,

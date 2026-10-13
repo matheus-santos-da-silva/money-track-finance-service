@@ -10,16 +10,24 @@ export abstract class ExpensesRepositoryProtocol {
     data: CreateDBTransactionDTO
   ): Promise<CreateExpenseResponseDTO>;
 
+  abstract createInstallments(
+    rows: CreateDBTransactionDTO[]
+  ): Promise<CreateExpenseResponseDTO[]>;
+
   abstract find(
     data: GetUserTransactionsInputDTO
   ): Promise<GetExpensesResponseDTO[]>;
 
   abstract findById(id: string): Promise<GetExpenseByIdResponseDTO>;
   abstract delete(id: string): Promise<void>;
-  abstract deleteByInstallmentsGroupId(groupId: string): Promise<void>;
+  abstract deleteByInstallmentsGroupId(
+    groupId: string,
+    user_id: string
+  ): Promise<void>;
   abstract update(id: string, data: UpdateTransactionDTO): Promise<void>;
   abstract updateByInstallmentsGroupId(
     groupId: string,
+    user_id: string,
     data: UpdateTransactionDTO
   ): Promise<void>;
 }

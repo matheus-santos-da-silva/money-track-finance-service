@@ -8,64 +8,97 @@ datasource db {
 }
 
 model User {
-  id          String     @id @default(uuid())
-  plan        Plan       @default(FREE)
-  trialEndsAt DateTime
-  categories  Category[]
-  expenses    Expense[]
-  incomes     Income[]
+  id               String            @id @default(uuid())
+  plan             Plan              @default(FREE)
+  trialEndsAt      DateTime
+  categories       Category[]
+  expenses         Expense[]
+  incomes          Income[]
+  recurring_series RecurringSeries[]
 
   @@map("users")
 }
 
 model Category {
-  id         String       @id @default(uuid())
-  user_id    String?
-  user       User?        @relation(fields: [user_id], references: [id])
-  type       CategoryType
-  name       String
-  icon       String?
-  Expense    Expense[]
-  Income     Income[]
-  created_at DateTime     @default(now())
+  id               String            @id @default(uuid())
+  user_id          String?
+  user             User?             @relation(fields: [user_id], references: [id])
+  type             CategoryType
+  name             String
+  icon             String?
+  Expense          Expense[]
+  Income           Income[]
+  recurring_series RecurringSeries[]
+  created_at       DateTime          @default(now())
+  archived_at      DateTime?
 
   @@map("categories")
 }
 
 model Expense {
-  id                   String     @id @default(uuid())
+  id                   String           @id @default(uuid())
   user_id              String
-  user                 User       @relation(fields: [user_id], references: [id])
+  user                 User             @relation(fields: [user_id], references: [id])
   category_id          String
-  category             Category   @relation(fields: [category_id], references: [id])
+  category             Category         @relation(fields: [category_id], references: [id])
   amount               Decimal
   description          String?
-  recurrence           Recurrence @default(NONE)
-  total_installments   Int        @default(1)
-  current_installment  Int        @default(1)
+  recurrence           Recurrence       @default(NONE)
+  total_installments   Int              @default(1)
+  current_installment  Int              @default(1)
   installment_group_id String?
-  transaction_date     DateTime   @default(now())
-  created_at           DateTime   @default(now())
+  recurrence_series_id String?
+  series               RecurringSeries? @relation(fields: [recurrence_series_id], references: [id])
+  transaction_date     DateTime         @default(now())
+  created_at           DateTime         @default(now())
 
+  @@unique([recurrence_series_id, transaction_date])
   @@map("expenses")
 }
 
 model Income {
-  id                   String     @id @default(uuid())
+  id                   String           @id @default(uuid())
   user_id              String
-  user                 User       @relation(fields: [user_id], references: [id])
+  user                 User             @relation(fields: [user_id], references: [id])
   category_id          String
-  category             Category   @relation(fields: [category_id], references: [id])
+  category             Category         @relation(fields: [category_id], references: [id])
   amount               Decimal
   description          String?
-  recurrence           Recurrence @default(NONE)
-  total_installments   Int        @default(1)
-  current_installment  Int        @default(1)
+  recurrence           Recurrence       @default(NONE)
+  total_installments   Int              @default(1)
+  current_installment  Int              @default(1)
   installment_group_id String?
-  transaction_date     DateTime   @default(now())
-  created_at           DateTime   @default(now())
+  recurrence_series_id String?
+  series               RecurringSeries? @relation(fields: [recurrence_series_id], references: [id])
+  transaction_date     DateTime         @default(now())
+  created_at           DateTime         @default(now())
 
+  @@unique([recurrence_series_id, transaction_date])
   @@map("incomes")
+}
+
+// Série de uma despesa/receita recorrente (mensal ou anual). Cada ocorrência é uma
+// linha normal em expenses/incomes ligada à série. As ocorrências futuras são
+// geradas sob demanda até generated_until.
+model RecurringSeries {
+  id              String       @id @default(uuid())
+  user_id         String
+  user            User         @relation(fields: [user_id], references: [id])
+  kind            CategoryType
+  frequency       Recurrence
+  anchor_date     DateTime
+  category_id     String
+  category        Category     @relation(fields: [category_id], references: [id])
+  amount          Decimal
+  description     String?
+  generated_until DateTime
+  active          Boolean      @default(true)
+  created_at      DateTime     @default(now())
+  expenses        Expense[]
+  incomes         Income[]
+
+  @@index([user_id, active])
+  @@map("recurring_series")
 }
 
 enum Recurrence {

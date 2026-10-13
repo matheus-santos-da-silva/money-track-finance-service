@@ -77,6 +77,33 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
+  // Todas as parcelas numa única transação: se uma falhar, nenhuma é gravada.
+  async createInstallments(
+    rows: CreateDBTransactionDTO[]
+  ): Promise<CreateExpenseResponseDTO[]> {
+    try {
+      return await this.prisma.$transaction(
+        rows.map((data) =>
+          this.prisma.expense.create({
+            data,
+            select: {
+              amount: true,
+              category_id: true,
+              description: true,
+              id: true,
+              total_installments: true,
+              current_installment: true,
+            },
+          })
+        )
+      );
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao criar as parcelas, tente novamente!"
+      );
+    }
+  }
+
   async update(id: string, data: UpdateTransactionDTO): Promise<void> {
     try {
       await this.prisma.expense.update({ where: { id }, data });
@@ -89,11 +116,12 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
 
   async updateByInstallmentsGroupId(
     groupId: string,
+    user_id: string,
     data: UpdateTransactionDTO
   ): Promise<void> {
     try {
       await this.prisma.expense.updateMany({
-        where: { installment_group_id: groupId },
+        where: { installment_group_id: groupId, user_id },
         data,
       });
     } catch (error) {
@@ -111,10 +139,13 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
-  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+  async deleteByInstallmentsGroupId(
+    groupId: string,
+    user_id: string
+  ): Promise<void> {
     try {
       await this.prisma.expense.deleteMany({
-        where: { installment_group_id: groupId },
+        where: { installment_group_id: groupId, user_id },
       });
     } catch (error) {
       throw new BadRequestException("Erro ao excluir as despesas");
@@ -134,6 +165,7 @@ export class ExpensesRepository implements ExpensesRepositoryProtocol {
           current_installment: true,
           installment_group_id: true,
           user_id: true,
+          recurrence_series_id: true,
           transaction_date: true,
           category: {
             select: {

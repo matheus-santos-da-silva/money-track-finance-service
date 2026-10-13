@@ -1,15 +1,8 @@
+import { Request } from "express";
 import { AuthGuard } from "src/application/auth/auth.guard";
-import { validateToken } from "src/shared/utils/validate-token";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
 import { CreateExpenseProtocol } from "src/domain/use-cases-protocol/expenses/";
-import {
-  Body,
-  Controller,
-  Post,
-  UseGuards,
-  Headers,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
 
 @Controller("expenses")
 @UseGuards(AuthGuard)
@@ -17,15 +10,14 @@ export class CreateExpenseController {
   constructor(private readonly createExpenseUseCase: CreateExpenseProtocol) {}
 
   @Post()
-  async execute(
-    @Body() data: CreateTransactionDTO,
-    @Headers("authorization") authHeader: string
-  ) {
+  async execute(@Req() req: Request, @Body() data: CreateTransactionDTO) {
     try {
-      const validToken = validateToken(authHeader, data.user_id);
-      if (!validToken) throw new UnauthorizedException("Não autorizado!");
+      const user = req["user"] as { id: string };
 
-      const expense = await this.createExpenseUseCase.create(data);
+      const expense = await this.createExpenseUseCase.create({
+        ...data,
+        user_id: user.id,
+      });
       return expense;
     } catch (error) {
       throw error;

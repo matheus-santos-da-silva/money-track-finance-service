@@ -1,5 +1,7 @@
-import { SetUTCDates } from "src/shared/utils/set-utc-dates";
+import { toCalendarDate } from "src/shared/transactions/calendar-date";
 import { Test, TestingModule } from "@nestjs/testing";
+import { recurringSeriesProvider } from "../helpers/recurring-series-provider";
+import { MaterializeRecurrencesService } from "src/application/services/materialize-recurrences.service";
 import { CreateIncomeInputMock } from "../../../test/mocks/incomes/create-income-input-mock";
 import { CreateExpenseInputMock } from "../../mocks/expenses/create-expense-input-mock";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
@@ -27,6 +29,8 @@ describe("Get User Transactions UseCase", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GetUserTransactionsUseCase,
+        MaterializeRecurrencesService,
+        recurringSeriesProvider,
         {
           provide: IncomesRepositoryProtocol,
           useClass: InMemoryIncomesRepository,
@@ -71,7 +75,7 @@ describe("Get User Transactions UseCase", () => {
   });
 
   it("should return a empty array if user do not have transactions", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     const result = useCase.find({ user_id: "test-user-id" });
     expect(result).resolves.toMatchObject({
       expenses: [],
@@ -80,7 +84,7 @@ describe("Get User Transactions UseCase", () => {
   });
 
   it("should return all user transactions", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     incomesRepository.create(CreateIncomeInputMock);
@@ -95,15 +99,15 @@ describe("Get User Transactions UseCase", () => {
   });
 
   it("should return user transactions on the given date", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     incomesRepository.create({
       ...CreateIncomeInputMock,
-      transaction_date: SetUTCDates(new Date("2025-04-21T12:00:00+00:00")),
+      transaction_date: toCalendarDate(new Date("2025-04-21T12:00:00+00:00")),
     });
     incomesRepository.create({
       ...CreateIncomeInputMock,
-      transaction_date: SetUTCDates(new Date("2025-04-22T12:00:00+00:00")),
+      transaction_date: toCalendarDate(new Date("2025-04-22T12:00:00+00:00")),
     });
 
     const result = useCase.find({

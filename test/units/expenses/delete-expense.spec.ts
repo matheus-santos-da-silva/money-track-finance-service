@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { recurringSeriesProvider } from "../helpers/recurring-series-provider";
 import { DeleteExpenseUseCase } from "src/application/use-cases/expenses";
 import { CreateExpenseInputMock } from "../../mocks/expenses/create-expense-input-mock";
 import { InMemoryExpensesRepository } from "../in-memory-repositories/expenses/in-memory-expenses-repository";
@@ -12,6 +13,7 @@ describe("Delete Expense UseCase", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DeleteExpenseUseCase,
+        recurringSeriesProvider,
         {
           provide: ExpensesRepositoryProtocol,
           useClass: InMemoryExpensesRepository,

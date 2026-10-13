@@ -1,6 +1,7 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
 import { CreatedExpenseMock } from "../../mocks/expenses/created-expense-mock";
 import { Test, TestingModule } from "@nestjs/testing";
+import { recurringSeriesProvider } from "../helpers/recurring-series-provider";
 import { CreateExpenseUseCase } from "src/application/use-cases/expenses/create-expense-use-case";
 import { CreateExpenseInputMock } from "../../mocks/expenses/create-expense-input-mock";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
@@ -21,6 +22,7 @@ describe("Create Expense UseCase", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateExpenseUseCase,
+        recurringSeriesProvider,
         {
           provide: ExpensesRepositoryProtocol,
           useClass: InMemoryExpensesRepository,
@@ -56,7 +58,7 @@ describe("Create Expense UseCase", () => {
   });
 
   it("should create a new expense", async () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     const result = await useCase.create(CreateExpenseInputMock);
 
@@ -68,7 +70,7 @@ describe("Create Expense UseCase", () => {
   });
 
   it("should throw an exception when amount is equal to 0", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     expensesRepository.create({
       ...CreateExpenseInputMock,
@@ -85,7 +87,7 @@ describe("Create Expense UseCase", () => {
   });
 
   it("should throw an exception when category not exists", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     expensesRepository.create(CreateExpenseInputMock);
     const result = useCase.create(CreateExpenseInputMock);
 
@@ -93,7 +95,7 @@ describe("Create Expense UseCase", () => {
   });
 
   it("should throw an exception when expense is not created successfully", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     jest.spyOn(expensesRepository, "create").mockResolvedValue(null);
     const result = useCase.create(CreateExpenseInputMock);
@@ -104,7 +106,7 @@ describe("Create Expense UseCase", () => {
   });
 
   it("should throw an exception when recurrence was different of NONE and has more than one installment", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     expensesRepository.create({
       ...CreateExpenseInputMock,

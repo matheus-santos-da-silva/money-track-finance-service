@@ -1,11 +1,11 @@
-import * as request from "supertest";
+import request from "supertest";
 import { AppModule } from "../../../src/app.module";
 import { PrismaService } from "src/infra/database/config/prisma.service";
 import { INestApplication } from "@nestjs/common";
-import { getTestAuthToken } from "src/shared/utils/test-auth";
+import { getTestAuthToken } from "../../helpers/test-auth";
 import { Test, TestingModule } from "@nestjs/testing";
 
-describe("Get User Transactions Controller (e2e) - (Get /transactions/user_id)", () => {
+describe("Get User Transactions Controller (e2e) - (GET /transactions)", () => {
   let app: INestApplication;
   let prismaService: PrismaService;
   let testToken: string;
@@ -28,27 +28,27 @@ describe("Get User Transactions Controller (e2e) - (Get /transactions/user_id)",
 
   it("should return status code 200 when get will be success", async () => {
     await request(app.getHttpServer())
-      .get("/transactions/test-user-id")
+      .get("/transactions")
       .set("Authorization", `Bearer ${testToken}`)
       .expect(200);
   });
 
   it("should return 401 status code when token is not provided", async () => {
     await request(app.getHttpServer())
-      .get("/transactions/test-user-id")
+      .get("/transactions")
       .expect(401);
   });
 
   it("should return 401 status code when the token is invalid", async () => {
     await request(app.getHttpServer())
-      .get("/transactions/test-user-id")
+      .get("/transactions")
       .set("Authorization", `Bearer invalid-token`)
       .expect(401);
   });
 
   it("should return 400 status code when the user gives just a one date parameter", async () => {
     await request(app.getHttpServer())
-      .get("/transactions/test-user-id?start_date=2025-05-29")
+      .get("/transactions?start_date=2025-05-29")
       .set("Authorization", `Bearer ${testToken}`)
       .expect(400);
   });

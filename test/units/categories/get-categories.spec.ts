@@ -42,7 +42,7 @@ describe("Get Categories", () => {
   });
 
   it("should return the categories", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     const result = useCase.findAll({
       user_id: "test-user-id",

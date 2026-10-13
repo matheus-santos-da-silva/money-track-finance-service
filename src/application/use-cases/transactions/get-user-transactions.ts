@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { MaterializeRecurrencesService } from "src/application/services/materialize-recurrences.service";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
 import { IncomesRepositoryProtocol } from "src/infra/database/repositories/incomes/protocols/incomes-repository-protocol";
 import { ExpensesRepositoryProtocol } from "src/infra/database/repositories/expenses/protocols/expenses-repository-protocol";
@@ -12,7 +13,8 @@ export class GetUserTransactionsUseCase implements GetUserTransactionsProtocol {
   constructor(
     private readonly incomesRepository: IncomesRepositoryProtocol,
     private readonly expensesRepository: ExpensesRepositoryProtocol,
-    private readonly usersRepository: UsersRepositoryProtocol
+    private readonly usersRepository: UsersRepositoryProtocol,
+    private readonly materializeRecurrences: MaterializeRecurrencesService
   ) {}
 
   async find({
@@ -27,6 +29,9 @@ export class GetUserTransactionsUseCase implements GetUserTransactionsProtocol {
       if (start_date && end_date) {
         start_date.setUTCHours(0, 0, 0, 0);
         end_date.setUTCHours(23, 59, 59, 999);
+
+        // Cria as ocorrências recorrentes que faltam até o fim do período consultado.
+        await this.materializeRecurrences.run(user_id, end_date);
       }
 
       const incomes = await this.incomesRepository.find({
