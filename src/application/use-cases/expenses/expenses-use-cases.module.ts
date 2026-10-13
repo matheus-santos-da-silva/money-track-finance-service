@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { RecurringSeriesRepositoriesModule } from "src/infra/database/repositories/recurring-series/recurring-series-repositories.module";
 import { UsersRepositoriesModule } from "src/infra/database/repositories/users/users-repositories.module";
 import { ExpensesRepositoriesModule } from "src/infra/database/repositories/expenses/expenses-repositories.module";
 import { CategoriesRepositoriesModule } from "src/infra/database/repositories/categories/categories-repositories.module";
@@ -20,6 +21,7 @@ import {
     ExpensesRepositoriesModule,
     CategoriesRepositoriesModule,
     UsersRepositoriesModule,
+    RecurringSeriesRepositoriesModule,
   ],
   providers: [
     {

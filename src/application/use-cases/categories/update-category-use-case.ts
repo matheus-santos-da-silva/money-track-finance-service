@@ -1,4 +1,5 @@
 import { UpdateCategoryDTO } from "src/domain/DTO/categories/update-category-DTO";
+import { assertCanWrite } from "src/shared/transactions/plan-policy";
 import { UpdateCategoryProtocol } from "src/domain/use-cases-protocol/categories";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
 import { CategoriesRepositoryProtocol } from "src/infra/database/repositories/categories/protocols/categories-repository-protocol";
@@ -19,6 +20,7 @@ export class UpdateCategoryUseCase implements UpdateCategoryProtocol {
     try {
       const user = await this.usersRepository.find(user_id);
       if (!user) throw new BadRequestException("Usuário não existe!");
+      assertCanWrite(user, "editar uma categoria");
 
       const categoryExists = await this.repository.findById({
         user_id,
@@ -29,7 +31,13 @@ export class UpdateCategoryUseCase implements UpdateCategoryProtocol {
         throw new BadRequestException("Categoria não encontrada!");
       }
 
-      const category = await this.repository.update(category_id, data);
+      if (categoryExists.user_id !== user_id) {
+        throw new BadRequestException(
+          "Não é possível alterar uma categoria padrão!",
+        );
+      }
+
+      const category = await this.repository.update(category_id, user_id, data);
       if (!category) {
         throw new BadRequestException("Erro ao atualizar a categoria");
       }

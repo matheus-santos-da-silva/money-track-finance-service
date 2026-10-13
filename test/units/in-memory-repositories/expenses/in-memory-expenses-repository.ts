@@ -1,8 +1,8 @@
 import { Expense } from "src/domain/entities/expenses/expense";
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
 import { randomUUID } from "node:crypto";
 import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
-import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
+import { CreateDBTransactionDTO } from "src/domain/DTO/transactions/create-db-transaction-DTO";
 import { GetExpensesResponseDTO } from "src/domain/DTO/expenses/get-expenses-response-DTO";
 import { CreateExpenseResponseDTO } from "src/domain/DTO/expenses/create-expense-response-DTO";
 import { GetExpenseByIdResponseDTO } from "src/domain/DTO/expenses/get-expense-by-id-response-DTO";
@@ -59,22 +59,23 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
 
     this.expenses[expenseIndex] = {
       ...currentExpense,
-      ...data,
+      ...(data as Partial<Expense>),
       amount: data.amount ? new Decimal(data.amount) : currentExpense.amount,
     };
   }
 
   async updateByInstallmentsGroupId(
     groupId: string,
+    user_id: string,
     data: UpdateTransactionDTO
   ): Promise<void> {
     for (let i = 0; i < this.expenses.length; i++) {
       const expense = this.expenses[i];
 
-      if (expense.installment_group_id === groupId) {
+      if (expense.installment_group_id === groupId && expense.user_id === user_id) {
         this.expenses[i] = {
           ...expense,
-          ...data,
+          ...(data as Partial<Expense>),
           amount: data.amount ? new Decimal(data.amount) : expense.amount,
         };
       }
@@ -89,9 +90,13 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
-  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+  async deleteByInstallmentsGroupId(
+    groupId: string,
+    user_id: string
+  ): Promise<void> {
     this.expenses = this.expenses.filter(
-      (expense) => expense.installment_group_id !== groupId
+      (expense) =>
+        expense.installment_group_id !== groupId || expense.user_id !== user_id
     );
   }
 
@@ -106,7 +111,15 @@ export class InMemoryExpensesRepository implements ExpensesRepositoryProtocol {
     }
   }
 
-  async create(data: CreateTransactionDTO): Promise<CreateExpenseResponseDTO> {
+  async createInstallments(
+    rows: CreateDBTransactionDTO[]
+  ): Promise<CreateExpenseResponseDTO[]> {
+    const created: CreateExpenseResponseDTO[] = [];
+    for (const row of rows) created.push(await this.create(row));
+    return created;
+  }
+
+  async create(data: CreateDBTransactionDTO): Promise<CreateExpenseResponseDTO> {
     const id = randomUUID();
     this.expenses.push({
       ...data,

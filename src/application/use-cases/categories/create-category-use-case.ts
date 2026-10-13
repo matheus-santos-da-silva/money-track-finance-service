@@ -1,4 +1,5 @@
 import { Category } from "src/domain/entities/categories/category";
+import { assertCanWrite } from "src/shared/transactions/plan-policy";
 import { CreateCategoryDTO } from "src/domain/DTO/categories/create-category-DTO";
 import { CreateCategoryProtocol } from "src/domain/use-cases-protocol/categories/create-category";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
@@ -17,11 +18,7 @@ export class CreateCategoryUseCase implements CreateCategoryProtocol {
       const user = await this.usersRepository.find(user_id);
       if (!user) throw new BadRequestException("Usuário não existe!");
 
-      if (user.plan === "FREE" && user.trialEndsAt < new Date()) {
-        throw new BadRequestException(
-          "Não é possível cadastrar uma categoria para um usuário com plano gratuito.",
-        );
-      }
+      assertCanWrite(user, "cadastrar uma categoria");
 
       const category = await this.repository.create(user_id, data);
       if (!category) throw new BadRequestException("Erro ao criar a categoria");

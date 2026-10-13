@@ -33,7 +33,7 @@ describe("Get Expense By Id UseCase", () => {
 
   it("should return a expense", async () => {
     const expense = await expensesRepository.create(CreateExpenseInputMock);
-    const result = useCase.findById(expense.id);
+    const result = useCase.findById(expense.id, "test-user-id");
 
     expect(result).resolves.toMatchObject({
       ...CreatedExpenseMock,
@@ -43,7 +43,15 @@ describe("Get Expense By Id UseCase", () => {
   });
 
   it("should throw an error when expense not exists", () => {
-    const result = useCase.findById("test-expense-id");
+    const result = useCase.findById("test-expense-id", "test-user-id");
     expect(result).rejects.toThrow("Despesa não existe, tente novamente!");
+  });
+
+  it("should not return a expense that belongs to another user", async () => {
+    const expense = await expensesRepository.create(CreateExpenseInputMock);
+
+    await expect(useCase.findById(expense.id, "another-user-id")).rejects.toThrow(
+      "Despesa não existe, tente novamente!"
+    );
   });
 });

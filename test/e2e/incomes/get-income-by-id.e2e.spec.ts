@@ -1,10 +1,10 @@
-import * as request from "supertest";
+import request from "supertest";
 import { AppModule } from "../../../src/app.module";
 import { PrismaService } from "src/infra/database/config/prisma.service";
 import { INestApplication } from "@nestjs/common";
-import { getTestAuthToken } from "src/shared/utils/test-auth";
+import { getTestAuthToken } from "../../helpers/test-auth";
 import { Test, TestingModule } from "@nestjs/testing";
-import { CreateIncomeInputMock } from "../../mocks/incomes/create-income-input-mock";
+import { CreateIncomeBodyMock } from "../../mocks/incomes/create-income-input-mock";
 
 describe("Get Income By Id Controller (e2e) - (Get /incomes/:id)", () => {
   let app: INestApplication;
@@ -30,7 +30,7 @@ describe("Get Income By Id Controller (e2e) - (Get /incomes/:id)", () => {
   it("should return status code 200 when get a income", async () => {
     const { body } = await request(app.getHttpServer())
       .post("/incomes")
-      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
+      .send({ ...CreateIncomeBodyMock, transaction_date: "2026-10-05", category_id: "test-category-income" })
       .set("Authorization", `Bearer ${testToken}`);
 
     await request(app.getHttpServer())

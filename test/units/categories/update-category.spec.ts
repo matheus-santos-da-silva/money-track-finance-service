@@ -42,7 +42,7 @@ describe("Update Category", () => {
   });
 
   it("should update category", async () => {
-    await usersRepository.create("test-user-id");
+    await usersRepository.create("test-user-id", "PREMIUM", new Date());
 
     await categoriesRepository.create(
       "test-user-id",
@@ -72,7 +72,7 @@ describe("Update Category", () => {
   });
 
   it("should throw an error when category not exists", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     const result = useCase.update(
       "test-category-id",
       "test-user-id",
@@ -80,5 +80,20 @@ describe("Update Category", () => {
     );
 
     expect(result).rejects.toThrow("Categoria não encontrada!");
+  });
+
+  it("should not allow updating a default category", async () => {
+    await usersRepository.create("test-user-id", "PREMIUM", new Date());
+    await categoriesRepository.create(null, CreateExpenseCategoryInputMock);
+
+    await expect(
+      useCase.update("test-category-id", "test-user-id", { name: "hacked" })
+    ).rejects.toThrow("Não é possível alterar uma categoria padrão!");
+
+    const category = await categoriesRepository.findById({
+      user_id: "test-user-id",
+      category_id: "test-category-id",
+    });
+    expect(category.name).toEqual(CreateExpenseCategoryInputMock.name);
   });
 });

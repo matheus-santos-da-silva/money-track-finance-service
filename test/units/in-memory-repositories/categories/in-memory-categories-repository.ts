@@ -1,3 +1,4 @@
+import { CategoryType } from "@prisma/client";
 import { Category } from "src/domain/entities/categories/category";
 import { FindCategoriesInputDTO } from "src/domain/DTO/categories/find-categories-input-DTO";
 import { GetCategoryResponseDTO } from "src/domain/DTO/categories/get-category-response-dto";
@@ -13,7 +14,7 @@ export class InMemoryCategoriesRepository
   categories: Category[] = [];
 
   async create(user_id: string, data: CreateCategoryDTO): Promise<Category> {
-    const category = { ...data, user_id, id: "test-category-id" };
+    const category = { id: "test-category-id", ...data, user_id };
     this.categories.push(category);
 
     return category;
@@ -21,10 +22,11 @@ export class InMemoryCategoriesRepository
 
   async update(
     category_id: string,
+    user_id: string,
     data: UpdateCategoryDTO
   ): Promise<Category> {
     const categoryIndex = this.categories.findIndex(
-      (category) => category.id === category_id
+      (category) => category.id === category_id && category.user_id === user_id
     );
 
     const currentCategory = this.categories[categoryIndex];
@@ -40,13 +42,15 @@ export class InMemoryCategoriesRepository
     };
   }
 
-  async delete(data: FindCategoryByIdInputDTO): Promise<void> {
-    const index = this.categories.findIndex(
+  async archive(data: FindCategoryByIdInputDTO): Promise<void> {
+    const category = this.categories.find(
       (category) =>
-        category.user_id === data.user_id && category.id === data.category_id
+        category.user_id === data.user_id &&
+        category.id === data.category_id &&
+        !category.archived_at
     );
 
-    if (index === -1) this.categories.splice(index, 1);
+    if (category) category.archived_at = new Date();
   }
 
   async find(id: string): Promise<FindCategoriesResponseDTO> {
@@ -54,12 +58,27 @@ export class InMemoryCategoriesRepository
     return category;
   }
 
+  async findAccessible(
+    data: FindCategoryByIdInputDTO
+  ): Promise<{ id: string; type: CategoryType } | null> {
+    const category = this.categories.find(
+      (category) =>
+        category.id === data.category_id &&
+        (category.user_id === data.user_id || category.user_id == null) &&
+        !category.archived_at
+    );
+
+    return category ? { id: category.id, type: category.type } : null;
+  }
+
   async findById(
     data: FindCategoryByIdInputDTO
   ): Promise<GetCategoryResponseDTO> {
     const category = this.categories.find(
       (category) =>
-        category.user_id === data.user_id && category.id === data.category_id
+        (category.user_id === data.user_id || category.user_id === null) &&
+        category.id === data.category_id &&
+        !category.archived_at
     );
 
     return category;
@@ -71,6 +90,7 @@ export class InMemoryCategoriesRepository
     let categoriesArray: Category[] = [];
 
     this.categories.forEach((category) => {
+      if (category.archived_at) return;
       if (data.type) {
         if (
           (category.user_id === null || category.user_id === data.user_id) &&

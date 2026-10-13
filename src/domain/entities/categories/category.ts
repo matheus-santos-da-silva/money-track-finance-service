@@ -14,6 +14,7 @@ export class Category {
   name: string;
   icon?: string;
   created_at: Date;
+  archived_at?: Date | null;
 
   constructor({ user_id, name, type, icon }: CategoryProps) {
     this.user_id = user_id;

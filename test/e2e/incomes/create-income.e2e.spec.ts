@@ -1,10 +1,10 @@
-import * as request from "supertest";
+import request from "supertest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
 import { AppModule } from "../../../src/app.module";
 import { PrismaService } from "src/infra/database/config/prisma.service";
-import { getTestAuthToken } from "src/shared/utils/test-auth";
-import { CreateIncomeInputMock } from "../../mocks/incomes/create-income-input-mock";
+import { getTestAuthToken } from "../../helpers/test-auth";
+import { CreateIncomeBodyMock } from "../../mocks/incomes/create-income-input-mock";
 
 describe("Create Income Controller (e2e) - (POST /incomes)", () => {
   let app: INestApplication;
@@ -30,7 +30,7 @@ describe("Create Income Controller (e2e) - (POST /incomes)", () => {
   it("should return status code 201 when creating an income", async () => {
     await request(app.getHttpServer())
       .post("/incomes")
-      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
+      .send({ ...CreateIncomeBodyMock, transaction_date: "2026-10-05", category_id: "test-category-income" })
       .set("Authorization", `Bearer ${testToken}`)
       .expect(201);
   });
@@ -38,7 +38,7 @@ describe("Create Income Controller (e2e) - (POST /incomes)", () => {
   it("should return 401 status code when token is not provided", async () => {
     await request(app.getHttpServer())
       .post("/incomes")
-      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
+      .send({ ...CreateIncomeBodyMock, transaction_date: "2026-10-05", category_id: "test-category-income" })
       .expect(401);
   });
 
@@ -46,23 +46,23 @@ describe("Create Income Controller (e2e) - (POST /incomes)", () => {
     await request(app.getHttpServer())
       .post("/incomes")
       .set("Authorization", `Bearer invalid-token`)
-      .send({ ...CreateIncomeInputMock, category_id: "test-category-income" })
+      .send({ ...CreateIncomeBodyMock, transaction_date: "2026-10-05", category_id: "test-category-income" })
       .expect(401);
   });
 
-  it("should return 401 status code when the token-id is different of user-id", async () => {
+  it("should return 400 status code when the body tries to set the owner (user_id)", async () => {
     await request(app.getHttpServer())
       .post("/incomes")
       .set("Authorization", `Bearer ${testToken}`)
-      .send({ ...CreateIncomeInputMock, user_id: "invalid-user-id" })
-      .expect(401);
+      .send({ ...CreateIncomeBodyMock, transaction_date: "2026-10-05", category_id: "test-category-income", user_id: "other-user-id" })
+      .expect(400);
   });
 
   it("should return 400 status code when the category not exists", async () => {
     await request(app.getHttpServer())
       .post("/incomes")
       .set("Authorization", `Bearer ${testToken}`)
-      .send({ ...CreateIncomeInputMock, category_id: "invalid-category" })
+      .send({ ...CreateIncomeBodyMock, transaction_date: "2026-10-05", category_id: "invalid-category" })
       .expect(400);
   });
 });

@@ -77,6 +77,33 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
+  // Todas as parcelas numa única transação: se uma falhar, nenhuma é gravada.
+  async createInstallments(
+    rows: CreateDBTransactionDTO[]
+  ): Promise<CreateIncomeResponseDTO[]> {
+    try {
+      return await this.prisma.$transaction(
+        rows.map((data) =>
+          this.prisma.income.create({
+            data,
+            select: {
+              amount: true,
+              category_id: true,
+              description: true,
+              id: true,
+              total_installments: true,
+              current_installment: true,
+            },
+          })
+        )
+      );
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao criar as parcelas, tente novamente!"
+      );
+    }
+  }
+
   async update(id: string, data: UpdateTransactionDTO): Promise<void> {
     try {
       await this.prisma.income.update({ where: { id }, data });
@@ -89,11 +116,12 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
 
   async updateByInstallmentsGroupId(
     groupId: string,
+    user_id: string,
     data: UpdateTransactionDTO
   ): Promise<void> {
     try {
       await this.prisma.income.updateMany({
-        where: { installment_group_id: groupId },
+        where: { installment_group_id: groupId, user_id },
         data,
       });
     } catch (error) {
@@ -111,10 +139,13 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
     }
   }
 
-  async deleteByInstallmentsGroupId(groupId: string): Promise<void> {
+  async deleteByInstallmentsGroupId(
+    groupId: string,
+    user_id: string
+  ): Promise<void> {
     try {
       await this.prisma.income.deleteMany({
-        where: { installment_group_id: groupId },
+        where: { installment_group_id: groupId, user_id },
       });
     } catch (error) {
       throw new BadRequestException("Erro ao excluir as receitas");
@@ -131,6 +162,7 @@ export class IncomesRepository implements IncomesRepositoryProtocol {
           description: true,
           id: true,
           user_id: true,
+          recurrence_series_id: true,
           total_installments: true,
           current_installment: true,
           installment_group_id: true,

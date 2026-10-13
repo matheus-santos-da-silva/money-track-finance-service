@@ -1,15 +1,13 @@
+import { Request } from "express";
 import { AuthGuard } from "src/application/auth/auth.guard";
 import { ParseDatePipe } from "src/presentation/custom-pipes/parse-date-pipe";
-import { validateToken } from "src/shared/utils/validate-token";
 import { GetUserTransactionsProtocol } from "src/domain/use-cases-protocol/transactions/get-user-transactions";
 import {
   BadRequestException,
   Controller,
   Get,
-  Param,
   Query,
-  Headers,
-  UnauthorizedException,
+  Req,
   UseGuards,
 } from "@nestjs/common";
 
@@ -19,17 +17,15 @@ export class GetUserTransactionsController {
     private readonly getUserTransactionsUseCase: GetUserTransactionsProtocol
   ) {}
 
-  @Get(":userId")
+  @Get()
   @UseGuards(AuthGuard)
   async execute(
-    @Param("userId") user_id: string,
-    @Headers("authorization") authHeader: string,
+    @Req() req: Request,
     @Query("start_date", ParseDatePipe) start_date?: Date,
     @Query("end_date", ParseDatePipe) end_date?: Date
   ) {
     try {
-      const validToken = validateToken(authHeader, user_id);
-      if (!validToken) throw new UnauthorizedException("Não autorizado!");
+      const user = req["user"] as { id: string };
 
       if ((!start_date && end_date) || (start_date && !end_date)) {
         throw new BadRequestException(
@@ -37,7 +33,7 @@ export class GetUserTransactionsController {
         );
       }
       const transactions = await this.getUserTransactionsUseCase.find({
-        user_id,
+        user_id: user.id,
         start_date,
         end_date,
       });

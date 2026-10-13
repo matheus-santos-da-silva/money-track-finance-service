@@ -5,4 +5,5 @@ export abstract class UsersRepositoryProtocol {
   abstract create(id: string, plan: Plan, trialEndsAt: Date): Promise<User>;
   abstract find(id: string): Promise<User>;
   abstract updatePlan(id: string, plan: Plan): Promise<void>;
+  abstract delete(id: string): Promise<void>;
 }

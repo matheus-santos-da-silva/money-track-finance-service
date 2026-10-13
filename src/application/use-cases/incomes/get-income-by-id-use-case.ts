@@ -8,10 +8,13 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 export class GetIncomeByIdUseCase implements GetIncomeByIdProtocol {
   constructor(private readonly repository: IncomesRepositoryProtocol) {}
 
-  async findById(id: string): Promise<GetIncomesResponseDTO> {
+  async findById(
+    id: string,
+    user_id: string,
+  ): Promise<GetIncomesResponseDTO> {
     try {
       const income = await this.repository.findById(id);
-      if (!income) {
+      if (!income || income.user_id !== user_id) {
         throw new BadRequestException("Receita não existe, tente novamente!");
       }
 

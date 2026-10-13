@@ -1,3 +1,4 @@
+import { CategoryType } from "@prisma/client";
 import { Category } from "src/domain/entities/categories/category";
 import { PrismaService } from "../../config/prisma.service";
 import { CreateCategoryDTO } from "src/domain/DTO/categories/create-category-DTO";
@@ -14,6 +15,26 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 export class CategoriesRepository implements CategoriesRepositoryProtocol {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAccessible({
+    user_id,
+    category_id,
+  }: FindCategoryByIdInputDTO): Promise<{ id: string; type: CategoryType } | null> {
+    try {
+      return await this.prisma.category.findFirst({
+        where: {
+          id: category_id,
+          OR: [{ user_id }, { user_id: null }],
+          archived_at: null,
+        },
+        select: { id: true, type: true },
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        "Erro ao retornar a categoria, tente novamente!"
+      );
+    }
+  }
+
   async findById({
     user_id,
     category_id,
@@ -23,10 +44,12 @@ export class CategoriesRepository implements CategoriesRepositoryProtocol {
         where: {
           id: category_id,
           OR: [{ user_id }, { user_id: null }],
+          archived_at: null,
         },
 
         select: {
           id: true,
+          user_id: true,
           icon: true,
           name: true,
         },
@@ -59,11 +82,12 @@ export class CategoriesRepository implements CategoriesRepositoryProtocol {
 
   async update(
     category_id: string,
+    user_id: string,
     data: UpdateCategoryDTO
   ): Promise<Category> {
     try {
       const category = await this.prisma.category.update({
-        where: { id: category_id },
+        where: { id: category_id, user_id },
         data,
       });
 
@@ -84,6 +108,7 @@ export class CategoriesRepository implements CategoriesRepositoryProtocol {
         const categories = await this.prisma.category.findMany({
           where: {
             OR: [{ user_id }, { user_id: null }],
+            archived_at: null,
             type,
           },
           select: {
@@ -100,6 +125,7 @@ export class CategoriesRepository implements CategoriesRepositoryProtocol {
       const categories = await this.prisma.category.findMany({
         where: {
           OR: [{ user_id }, { user_id: null }],
+          archived_at: null,
         },
         select: {
           id: true,
@@ -116,16 +142,18 @@ export class CategoriesRepository implements CategoriesRepositoryProtocol {
     }
   }
 
-  async delete({
+  async archive({
     user_id,
     category_id,
   }: FindCategoryByIdInputDTO): Promise<void> {
     try {
-      await this.prisma.category.delete({
+      await this.prisma.category.updateMany({
         where: {
           id: category_id,
           user_id,
+          archived_at: null,
         },
+        data: { archived_at: new Date() },
       });
     } catch (error) {
       throw new BadRequestException(

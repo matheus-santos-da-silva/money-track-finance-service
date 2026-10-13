@@ -1,10 +1,10 @@
-import * as request from "supertest";
+import request from "supertest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
 import { AppModule } from "../../../src/app.module";
 import { PrismaService } from "src/infra/database/config/prisma.service";
-import { CreateExpenseInputMock } from "../../mocks/expenses/create-expense-input-mock";
-import { getTestAuthToken } from "src/shared/utils/test-auth";
+import { CreateExpenseBodyMock } from "../../mocks/expenses/create-expense-input-mock";
+import { getTestAuthToken } from "../../helpers/test-auth";
 
 describe("Create Expense Controller (e2e) - (POST /expenses)", () => {
   let app: INestApplication;
@@ -30,15 +30,28 @@ describe("Create Expense Controller (e2e) - (POST /expenses)", () => {
   it("should return status code 201 when creating an expense", async () => {
     await request(app.getHttpServer())
       .post("/expenses")
-      .send({ ...CreateExpenseInputMock, category_id: "test-category-expense" })
+      .send({ ...CreateExpenseBodyMock, transaction_date: "2026-10-05", category_id: "test-category-expense" })
       .set("Authorization", `Bearer ${testToken}`)
       .expect(201);
+  });
+
+  it("should create the expense for the token user", async () => {
+    const response = await request(app.getHttpServer())
+      .post("/expenses")
+      .send({ ...CreateExpenseBodyMock, transaction_date: "2026-10-05", category_id: "test-category-expense" })
+      .set("Authorization", `Bearer ${testToken}`)
+      .expect(201);
+
+    const created = await prismaService.expense.findUnique({
+      where: { id: response.body.id },
+    });
+    expect(created?.user_id).toBe("test-user-id");
   });
 
   it("should return 401 status code when token is not provided", async () => {
     await request(app.getHttpServer())
       .post("/expenses")
-      .send({ ...CreateExpenseInputMock, category_id: "test-category-expense" })
+      .send({ ...CreateExpenseBodyMock, transaction_date: "2026-10-05", category_id: "test-category-expense" })
       .expect(401);
   });
 
@@ -46,23 +59,23 @@ describe("Create Expense Controller (e2e) - (POST /expenses)", () => {
     await request(app.getHttpServer())
       .post("/expenses")
       .set("Authorization", `Bearer invalid-token`)
-      .send({ ...CreateExpenseInputMock, category_id: "test-category-expense" })
+      .send({ ...CreateExpenseBodyMock, transaction_date: "2026-10-05", category_id: "test-category-expense" })
       .expect(401);
   });
 
-  it("should return 401 status code when the token-id is different of user-id", async () => {
+  it("should return 400 status code when the body tries to set the owner (user_id)", async () => {
     await request(app.getHttpServer())
       .post("/expenses")
       .set("Authorization", `Bearer ${testToken}`)
-      .send({ ...CreateExpenseInputMock, user_id: "invalid-user-id" })
-      .expect(401);
+      .send({ ...CreateExpenseBodyMock, transaction_date: "2026-10-05", category_id: "test-category-expense", user_id: "other-user-id" })
+      .expect(400);
   });
 
   it("should return 400 status code when the category not exists", async () => {
     await request(app.getHttpServer())
       .post("/expenses")
       .set("Authorization", `Bearer ${testToken}`)
-      .send({ ...CreateExpenseInputMock, category_id: "invalid-category" })
+      .send({ ...CreateExpenseBodyMock, transaction_date: "2026-10-05", category_id: "invalid-category" })
       .expect(400);
   });
 });

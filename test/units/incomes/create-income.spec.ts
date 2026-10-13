@@ -1,5 +1,6 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
 import { Test, TestingModule } from "@nestjs/testing";
+import { recurringSeriesProvider } from "../helpers/recurring-series-provider";
 import { CreateIncomeUseCase } from "src/application/use-cases/incomes/create-income-use-case";
 import { CreateIncomeInputMock } from "../../../test/mocks/incomes/create-income-input-mock";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
@@ -9,7 +10,7 @@ import { InMemoryIncomesRepository } from "../in-memory-repositories/incomes/in-
 import { CategoriesRepositoryProtocol } from "src/infra/database/repositories/categories/protocols/categories-repository-protocol";
 import { InMemoryCategoriesRepository } from "../in-memory-repositories/categories/in-memory-categories-repository";
 import { CreateIncomeCategoryInputMock } from "../../mocks/categories/create-category-input-mock";
-import { SetUTCDates } from "src/shared/utils/set-utc-dates";
+import { toCalendarDate } from "src/shared/transactions/calendar-date";
 
 describe("Create Income UseCase", () => {
   let useCase: CreateIncomeUseCase;
@@ -21,6 +22,7 @@ describe("Create Income UseCase", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateIncomeUseCase,
+        recurringSeriesProvider,
         {
           provide: IncomesRepositoryProtocol,
           useClass: InMemoryIncomesRepository,
@@ -56,14 +58,14 @@ describe("Create Income UseCase", () => {
   });
 
   it("should create a new income", async () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     const result = await useCase.create(CreateIncomeInputMock);
 
     expect(result).toMatchObject({
       ...CreateIncomeInputMock,
       id: result.id,
-      transaction_date: SetUTCDates(
+      transaction_date: toCalendarDate(
         new Date(CreateIncomeInputMock.transaction_date)
       ),
       amount: 200,
@@ -71,7 +73,7 @@ describe("Create Income UseCase", () => {
   });
 
   it("should throw an exception when amount is equal to 0", async () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     incomesRepository.create({
       ...CreateIncomeInputMock,
@@ -89,7 +91,7 @@ describe("Create Income UseCase", () => {
   });
 
   it("should throw an exception when category not exists", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     incomesRepository.create(CreateIncomeInputMock);
     const result = useCase.create(CreateIncomeInputMock);
 
@@ -97,7 +99,7 @@ describe("Create Income UseCase", () => {
   });
 
   it("should throw an exception when income is not created successfully", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     jest.spyOn(incomesRepository, "create").mockResolvedValue(null);
     const result = useCase.create(CreateIncomeInputMock);
@@ -108,7 +110,7 @@ describe("Create Income UseCase", () => {
   });
 
   it("should throw an exception when recurrence was different of NONE and has more than one installment", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateIncomeCategoryInputMock);
     incomesRepository.create({
       ...CreateIncomeInputMock,

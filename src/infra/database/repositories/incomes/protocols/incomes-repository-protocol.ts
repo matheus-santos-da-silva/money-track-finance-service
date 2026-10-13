@@ -10,16 +10,24 @@ export abstract class IncomesRepositoryProtocol {
     data: CreateDBTransactionDTO
   ): Promise<CreateIncomeResponseDTO>;
 
+  abstract createInstallments(
+    rows: CreateDBTransactionDTO[]
+  ): Promise<CreateIncomeResponseDTO[]>;
+
   abstract find(
     data: GetUserTransactionsInputDTO
   ): Promise<GetIncomesResponseDTO[]>;
 
   abstract findById(id: string): Promise<GetIncomeByIdResponseDTO>;
   abstract delete(id: string): Promise<void>;
-  abstract deleteByInstallmentsGroupId(groupId: string): Promise<void>;
+  abstract deleteByInstallmentsGroupId(
+    groupId: string,
+    user_id: string
+  ): Promise<void>;
   abstract update(id: string, data: UpdateTransactionDTO): Promise<void>;
   abstract updateByInstallmentsGroupId(
     groupId: string,
+    user_id: string,
     data: UpdateTransactionDTO
   ): Promise<void>;
 }

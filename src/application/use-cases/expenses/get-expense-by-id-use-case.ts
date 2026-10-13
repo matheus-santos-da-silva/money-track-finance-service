@@ -8,10 +8,13 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 export class GetExpenseByIdUseCase implements GetExpenseByIdProtocol {
   constructor(private readonly repository: ExpensesRepositoryProtocol) {}
 
-  async findById(id: string): Promise<GetExpensesResponseDTO> {
+  async findById(
+    id: string,
+    user_id: string,
+  ): Promise<GetExpensesResponseDTO> {
     try {
       const expense = await this.repository.findById(id);
-      if (!expense) {
+      if (!expense || expense.user_id !== user_id) {
         throw new BadRequestException("Despesa não existe, tente novamente!");
       }
 

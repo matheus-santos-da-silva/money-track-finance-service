@@ -1,3 +1,4 @@
+import { CategoryType } from "@prisma/client";
 import { Category } from "src/domain/entities/categories/category";
 import { CreateCategoryDTO } from "src/domain/DTO/categories/create-category-DTO";
 import { UpdateCategoryDTO } from "src/domain/DTO/categories/update-category-DTO";
@@ -10,6 +11,11 @@ import { FindCategoriesResponseDTO } from "src/domain/DTO/categories/find-catego
 export abstract class CategoriesRepositoryProtocol {
   abstract find(id: string): Promise<FindCategoriesResponseDTO>;
 
+  // Categoria do próprio usuário ou padrão (user_id nulo), com o tipo.
+  abstract findAccessible(
+    data: FindCategoryByIdInputDTO
+  ): Promise<{ id: string; type: CategoryType } | null>;
+
   abstract findById(
     data: FindCategoryByIdInputDTO
   ): Promise<CategoryResponseDTO>;
@@ -20,9 +26,10 @@ export abstract class CategoriesRepositoryProtocol {
 
   abstract update(
     category_id: string,
+    user_id: string,
     data: UpdateCategoryDTO
   ): Promise<Category>;
 
-  abstract delete(data: FindCategoryByIdInputDTO): Promise<void>;
+  abstract archive(data: FindCategoryByIdInputDTO): Promise<void>;
   abstract create(user_id: string, data: CreateCategoryDTO): Promise<Category>;
 }

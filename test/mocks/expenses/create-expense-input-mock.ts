@@ -1,6 +1,6 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/client";
 import { Recurrence } from "@prisma/client";
-import { SetUTCDates } from "src/shared/utils/set-utc-dates";
+import { toCalendarDate } from "src/shared/transactions/calendar-date";
 
 export const CreateExpenseInputMock = {
   user_id: "test-user-id",
@@ -10,5 +10,9 @@ export const CreateExpenseInputMock = {
   current_installment: 1,
   recurrence: Recurrence.NONE,
   description: "Test Expense",
-  transaction_date: SetUTCDates(new Date()),
+  transaction_date: toCalendarDate(new Date()),
 };
+
+// Corpo HTTP: sem dono, o servidor usa o usuário do token.
+const { user_id: _userId, ...ExpenseBody } = CreateExpenseInputMock;
+export const CreateExpenseBodyMock = ExpenseBody;

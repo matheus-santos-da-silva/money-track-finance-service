@@ -24,6 +24,7 @@ export class Income {
   total_installments: number;
   current_installment: number;
   installment_group_id?: string;
+  recurrence_series_id?: string | null;
   transaction_date: Date;
   created_at: Date;
 

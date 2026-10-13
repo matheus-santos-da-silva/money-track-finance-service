@@ -42,7 +42,7 @@ describe("Create Category", () => {
   });
 
   it("should create a category", () => {
-    usersRepository.create("test-user-id");
+    usersRepository.create("test-user-id", "PREMIUM", new Date());
     categoriesRepository.create("test-user-id", CreateExpenseCategoryInputMock);
     const result = useCase.create(
       "test-user-id",
