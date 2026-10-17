@@ -44,6 +44,29 @@ export const isSameCalendarDay = (a: Date, b: Date): boolean =>
   a.getUTCMonth() === b.getUTCMonth() &&
   a.getUTCDate() === b.getUTCDate();
 
+// Primeiro e último instante (UTC) do dia de calendário: limites de um filtro por período.
+export const startOfCalendarDay = (date: Date): Date =>
+  new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+
+export const endOfCalendarDay = (date: Date): Date =>
+  new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      23,
+      59,
+      59,
+      999,
+    ),
+  );
+
+// "AAAA-MM-DD" do dia de calendário.
+export const calendarDayKey = (date: Date): string =>
+  date.toISOString().slice(0, 10);
+
 // Soma meses a partir da data ORIGINAL, sem estourar o fim do mês
 // (31/jan + 1 mês = 28/fev, e não 03/mar).
 export const addMonthsClamped = (date: Date, months: number): Date => {
