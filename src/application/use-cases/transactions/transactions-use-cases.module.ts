@@ -5,6 +5,9 @@ import { UsersRepositoriesModule } from "src/infra/database/repositories/users/u
 import { IncomesRepositoriesModule } from "src/infra/database/repositories/incomes/incomes-repositories.module";
 import { ExpensesRepositoriesModule } from "src/infra/database/repositories/expenses/expenses-repositories.module";
 import { GetUserTransactionsUseCase } from "./get-user-transactions";
+import { GetStatementUseCase } from "./get-statement";
+import { GetStatementProtocol } from "src/domain/use-cases-protocol/transactions/get-statement";
+import { StatementRepositoriesModule } from "src/infra/database/repositories/statement/statement-repositories.module";
 import { GetUserTransactionsProtocol } from "src/domain/use-cases-protocol/transactions/get-user-transactions";
 
 @Module({
@@ -13,6 +16,7 @@ import { GetUserTransactionsProtocol } from "src/domain/use-cases-protocol/trans
     IncomesRepositoriesModule,
     UsersRepositoriesModule,
     RecurringSeriesRepositoriesModule,
+    StatementRepositoriesModule,
   ],
   providers: [
     MaterializeRecurrencesService,
@@ -20,7 +24,11 @@ import { GetUserTransactionsProtocol } from "src/domain/use-cases-protocol/trans
       provide: GetUserTransactionsProtocol,
       useClass: GetUserTransactionsUseCase,
     },
+    {
+      provide: GetStatementProtocol,
+      useClass: GetStatementUseCase,
+    },
   ],
-  exports: [GetUserTransactionsProtocol],
+  exports: [GetUserTransactionsProtocol, GetStatementProtocol],
 })
 export class TransactionsUseCasesModule {}
