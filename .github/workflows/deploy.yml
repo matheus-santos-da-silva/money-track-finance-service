@@ -36,7 +36,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Só dispara quando houver servidor: ative com a variável de repositório DEPLOY_ENABLED=true
       - name: Disparar deploy no infra
+        if: vars.DEPLOY_ENABLED == 'true'
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.DEPLOY_TOKEN }}
