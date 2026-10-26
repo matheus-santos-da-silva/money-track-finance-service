@@ -1,4 +1,7 @@
 import { Kafka, logLevel } from "kafkajs";
+import { Logger } from "@nestjs/common";
+
+const logger = new Logger("KafkaTopics");
 
 const EVENT_TOPICS = ["user-created", "user-plan-updated", "user-deleted"];
 
@@ -25,7 +28,7 @@ export const ensureKafkaTopics = async (brokers: string[]): Promise<void> => {
       topics: KAFKA_TOPICS.map((topic) => ({ topic })),
     });
   } catch (error) {
-    console.warn("Não foi possível garantir os tópicos do Kafka:", error);
+    logger.warn({ err: error }, "Não foi possível garantir os tópicos do Kafka");
   } finally {
     await admin.disconnect().catch(() => undefined);
   }

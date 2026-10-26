@@ -1,8 +1,11 @@
+import { Logger } from "@nestjs/common";
 import { isTransientError } from "./is-transient-error";
 
 export interface DeadLetterPublisher {
   publish(topic: string, payload: unknown, error: unknown): Promise<void>;
 }
+
+export type MessageOutcome = "processed" | "dead-lettered";
 
 interface WithRetryAndDlqOptions {
   topic: string;
@@ -15,6 +18,8 @@ interface WithRetryAndDlqOptions {
   isRetryable?: (error: unknown) => boolean;
 }
 
+const logger = new Logger("KafkaRetry");
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Executa o handler com retry e backoff exponencial, mas só para erros passageiros.
@@ -23,7 +28,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // travada por uma mensagem ruim.
 // Se nem a DLQ aceitar a mensagem, o erro original é relançado: o kafkajs
 // reentrega a mensagem e nada é perdido.
-//
+
 // Pior caso de espera com os padrões: 0,5 s + 1 s = 1,5 s (e 0 s para erro permanente).
 export const withRetryAndDlq = async ({
   topic,
@@ -33,32 +38,41 @@ export const withRetryAndDlq = async ({
   attempts = 3,
   baseDelayMs = 500,
   isRetryable = isTransientError,
-}: WithRetryAndDlqOptions): Promise<void> => {
+}: WithRetryAndDlqOptions): Promise<MessageOutcome> => {
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
       await handler();
-      return;
+      return "processed";
     } catch (error) {
       lastError = error;
-      const reason = error instanceof Error ? error.message : error;
 
       if (!isRetryable(error)) {
-        console.warn(`[${topic}] erro permanente, sem retry:`, reason);
+        logger.warn({ topic, err: error }, "Erro permanente, sem nova tentativa");
         break;
       }
 
-      console.warn(`[${topic}] tentativa ${attempt}/${attempts} falhou:`, reason);
+      logger.warn(
+        { topic, attempt, attempts, err: error },
+        "Tentativa de processar o evento falhou",
+      );
       if (attempt < attempts) await sleep(baseDelayMs * 2 ** (attempt - 1));
     }
   }
 
   try {
     await deadLetter.publish(topic, payload, lastError);
-    console.error(`[${topic}] mensagem enviada para ${topic}.dlq`);
+    logger.error(
+      { topic, dlqTopic: `${topic}.dlq`, err: lastError },
+      "Mensagem enviada para a DLQ",
+    );
+    return "dead-lettered";
   } catch (dlqError) {
-    console.error(`[${topic}] falha ao publicar na DLQ:`, dlqError);
+    logger.error(
+      { topic, err: dlqError },
+      "Falha ao publicar na DLQ: a mensagem será reentregue",
+    );
     throw lastError instanceof Error ? lastError : new Error("Erro desconhecido");
   }
 };

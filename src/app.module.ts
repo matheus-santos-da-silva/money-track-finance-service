@@ -7,9 +7,12 @@ import { ExpensesControllersModule } from "./presentation/controllers/expenses/e
 import { CategoriesControllersModule } from "./presentation/controllers/categories/categories-controllers.module";
 import { TransactionsControllersModule } from "./presentation/controllers/transactions/transactions-controllers.module";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { LoggerModule } from "nestjs-pino";
+import { loggerOptions } from "./shared/observability/logger-options";
 
 @Module({
   imports: [
+    LoggerModule.forRoot(loggerOptions("finance-service")),
     ExpensesControllersModule,
     IncomesControllersModule,
     TransactionsControllersModule,

@@ -54,8 +54,6 @@ describe("User Deleted Consumer", () => {
 
   it("should send the message to the DLQ when the repository keeps failing", async () => {
     jest.useFakeTimers();
-    jest.spyOn(console, "warn").mockImplementation(() => undefined);
-    jest.spyOn(console, "error").mockImplementation(() => undefined);
     jest
       .spyOn(usersRepository, "delete")
       .mockRejectedValue(new Error("db down"));
