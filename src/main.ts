@@ -5,9 +5,16 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import { ValidationPipe } from "@nestjs/common";
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { ensureKafkaTopics } from "./infra/kafka/ensure-topics";
+import { Logger } from "nestjs-pino";
+import { requestContextMiddleware } from "./shared/observability/request-context";
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+  app.useLogger(app.get(Logger));
+  // Primeiro middleware: dá um id a cada requisição antes de qualquer log.
+  app.use(requestContextMiddleware);
   // Atrás do Caddy, req.ip precisa ser o IP real do cliente (X-Forwarded-For);
   // senão o rate limit (Throttler) conta todos os usuários como um só.
   app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
@@ -29,8 +36,7 @@ async function bootstrap() {
       consumer: {
         groupId: "finance-service-group",
       },
-      // Grupo novo (sem offset) lê o histórico em vez de ignorá-lo. Seguro porque
-      // os consumers são idempotentes.
+      // Grupo novo (sem offset) lê o histórico em vez de ignorá-lo. Seguro porque os consumers são idempotentes.
       subscribe: { fromBeginning: true },
     },
   });

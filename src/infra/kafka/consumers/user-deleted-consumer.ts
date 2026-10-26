@@ -1,5 +1,11 @@
 import { Controller } from "@nestjs/common";
-import { MessagePattern, Payload } from "@nestjs/microservices";
+import {
+  Ctx,
+  KafkaContext,
+  MessagePattern,
+  Payload,
+} from "@nestjs/microservices";
+import { runWithMessageContext } from "../message-context";
 import { DeadLetterService } from "../dead-letter/dead-letter.service";
 import { withRetryAndDlq } from "../dead-letter/with-retry-and-dlq";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
@@ -16,12 +22,17 @@ export class UserDeletedConsumer {
   ) {}
 
   @MessagePattern("user-deleted")
-  async execute(@Payload() message: UserDeletedPayload): Promise<void> {
-    await withRetryAndDlq({
-      topic: "user-deleted",
-      payload: message,
-      deadLetter: this.deadLetter,
-      handler: () => this.repository.delete(message.id),
-    });
+  async execute(
+    @Payload() message: UserDeletedPayload,
+    @Ctx() context?: KafkaContext,
+  ): Promise<void> {
+    await runWithMessageContext("user-deleted", context, () =>
+      withRetryAndDlq({
+        topic: "user-deleted",
+        payload: message,
+        deadLetter: this.deadLetter,
+        handler: () => this.repository.delete(message.id),
+      }),
+    );
   }
 }

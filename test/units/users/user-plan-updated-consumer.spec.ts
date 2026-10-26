@@ -57,7 +57,6 @@ describe("User Plan Updated Consumer", () => {
 
   it("should retry transient failures without using the DLQ", async () => {
     jest.useFakeTimers();
-    jest.spyOn(console, "warn").mockImplementation(() => undefined);
 
     const updatePlan = jest
       .spyOn(usersRepository, "updatePlan")
@@ -73,8 +72,6 @@ describe("User Plan Updated Consumer", () => {
   });
 
   it("should send an invalid message straight to the DLQ without retrying", async () => {
-    jest.spyOn(console, "warn").mockImplementation(() => undefined);
-    jest.spyOn(console, "error").mockImplementation(() => undefined);
     const updatePlan = jest
       .spyOn(usersRepository, "updatePlan")
       .mockRejectedValue(
@@ -92,8 +89,6 @@ describe("User Plan Updated Consumer", () => {
 
   it("should send the message to the DLQ when the update keeps failing", async () => {
     jest.useFakeTimers();
-    jest.spyOn(console, "warn").mockImplementation(() => undefined);
-    jest.spyOn(console, "error").mockImplementation(() => undefined);
     jest
       .spyOn(usersRepository, "updatePlan")
       .mockRejectedValue(new Error("db down"));

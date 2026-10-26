@@ -5,8 +5,6 @@ describe("withRetryAndDlq", () => {
 
   beforeEach(() => {
     deadLetter = { publish: jest.fn().mockResolvedValue(undefined) };
-    jest.spyOn(console, "warn").mockImplementation(() => undefined);
-    jest.spyOn(console, "error").mockImplementation(() => undefined);
   });
 
   afterEach(() => jest.restoreAllMocks());
@@ -38,7 +36,7 @@ describe("withRetryAndDlq", () => {
   it("should run the handler once and not touch the DLQ on success", async () => {
     const handler = jest.fn().mockResolvedValue(undefined);
 
-    await run(handler);
+    await expect(run(handler)).resolves.toBe("processed");
 
     expect(handler).toHaveBeenCalledTimes(1);
     expect(deadLetter.publish).not.toHaveBeenCalled();
@@ -106,7 +104,7 @@ describe("withRetryAndDlq", () => {
     const error = new Error("permanente");
     const handler = jest.fn().mockRejectedValue(error);
 
-    await expect(run(handler)).resolves.toBeUndefined();
+    await expect(run(handler)).resolves.toBe("dead-lettered");
 
     expect(handler).toHaveBeenCalledTimes(3);
     expect(deadLetter.publish).toHaveBeenCalledWith(

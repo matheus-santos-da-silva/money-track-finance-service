@@ -1,12 +1,13 @@
 import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { Kafka, Producer, logLevel } from "kafkajs";
 import { DeadLetterPublisher } from "./with-retry-and-dlq";
+import { CORRELATION_ID_HEADER } from "../message-context";
+import { getRequestContext } from "src/shared/observability/request-context";
 
 @Injectable()
 export class DeadLetterService implements DeadLetterPublisher, OnModuleDestroy {
   private producer?: Producer;
 
-  // O producer só conecta na primeira falha: o caminho feliz não abre conexão extra.
   private async getProducer(): Promise<Producer> {
     if (!this.producer) {
       const producer = new Kafka({
@@ -22,10 +23,15 @@ export class DeadLetterService implements DeadLetterPublisher, OnModuleDestroy {
 
   async publish(topic: string, payload: unknown, error: unknown): Promise<void> {
     const producer = await this.getProducer();
+    const correlationId = getRequestContext()?.requestId;
+
     await producer.send({
       topic: `${topic}.dlq`,
       messages: [
         {
+          headers: correlationId
+            ? { [CORRELATION_ID_HEADER]: correlationId }
+            : undefined,
           value: JSON.stringify({
             payload,
             error: error instanceof Error ? error.message : String(error),
