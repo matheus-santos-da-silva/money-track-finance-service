@@ -1,8 +1,12 @@
 import "reflect-metadata";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { MAX_INSTALLMENTS } from "src/shared/constants/transactions";
+import {
+  DESCRIPTION_MAX_LENGTH,
+  MAX_INSTALLMENTS,
+} from "src/shared/constants/transactions";
 import { CreateTransactionDTO } from "src/domain/DTO/transactions/create-transaction-DTO";
+import { UpdateTransactionDTO } from "src/domain/DTO/transactions/update-transaction-DTO";
 
 const validPayload = {
   category_id: "test-category-id",
@@ -55,5 +59,28 @@ describe("CreateTransactionDTO validation", () => {
     expect(await errorsFor({ amount: -10 })).toContain("amount");
     expect(await errorsFor({ amount: "abc" })).toContain("amount");
     expect(await errorsFor({ amount: 10.123 })).toContain("amount");
+  });
+
+  it("should limit the description to DESCRIPTION_MAX_LENGTH characters", async () => {
+    expect(
+      await errorsFor({ description: "a".repeat(DESCRIPTION_MAX_LENGTH) }),
+    ).toEqual([]);
+    expect(
+      await errorsFor({ description: "a".repeat(DESCRIPTION_MAX_LENGTH + 1) }),
+    ).toContain("description");
+  });
+});
+
+describe("UpdateTransactionDTO validation", () => {
+  it("should limit the description to DESCRIPTION_MAX_LENGTH characters", async () => {
+    const errorsOf = async (description: string) =>
+      (await validate(plainToInstance(UpdateTransactionDTO, { description }))).map(
+        (error) => error.property,
+      );
+
+    expect(await errorsOf("a".repeat(DESCRIPTION_MAX_LENGTH))).toEqual([]);
+    expect(await errorsOf("a".repeat(DESCRIPTION_MAX_LENGTH + 1))).toContain(
+      "description",
+    );
   });
 });

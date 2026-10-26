@@ -1,7 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { Recurrence } from "@prisma/client";
-import { MAX_INSTALLMENTS } from "src/shared/constants/transactions";
 import {
+  DESCRIPTION_MAX_LENGTH,
+  MAX_INSTALLMENTS,
+} from "src/shared/constants/transactions";
+import {
+  MaxLength,
   IsDateString,
   IsEnum,
   IsInt,
@@ -52,6 +56,9 @@ export class CreateTransactionDTO {
 
   @IsOptional()
   @IsString({ message: "A descrição deve ser uma string!" })
+  @MaxLength(DESCRIPTION_MAX_LENGTH, {
+    message: `A descrição deve ter no máximo ${DESCRIPTION_MAX_LENGTH} caracteres!`,
+  })
   description?: string;
 
   // Dia de calendário (AAAA-MM-DD). Date só é usado internamente/em testes.
