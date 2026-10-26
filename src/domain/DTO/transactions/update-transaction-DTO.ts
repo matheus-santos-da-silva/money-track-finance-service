@@ -1,7 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { Recurrence } from "@prisma/client";
-import { MAX_INSTALLMENTS } from "src/shared/constants/transactions";
 import {
+  DESCRIPTION_MAX_LENGTH,
+  MAX_INSTALLMENTS,
+} from "src/shared/constants/transactions";
+import {
+  MaxLength,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -26,6 +30,9 @@ export class UpdateTransactionDTO {
 
   @IsOptional()
   @IsString({ message: "A descrição precisa ser string!" })
+  @MaxLength(DESCRIPTION_MAX_LENGTH, {
+    message: `A descrição deve ter no máximo ${DESCRIPTION_MAX_LENGTH} caracteres!`,
+  })
   description?: string;
 
   @IsOptional()
