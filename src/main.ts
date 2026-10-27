@@ -2,7 +2,7 @@ import "dotenv/config";
 import { AppModule } from "./app.module";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
-import { ValidationPipe } from "@nestjs/common";
+import { RequestMethod, ValidationPipe } from "@nestjs/common";
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { ensureKafkaTopics } from "./infra/kafka/ensure-topics";
 import { Logger } from "nestjs-pino";
@@ -15,6 +15,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   // Primeiro middleware: dá um id a cada requisição antes de qualquer log.
   app.use(requestContextMiddleware);
+  app.enableShutdownHooks();
   // Atrás do Caddy, req.ip precisa ser o IP real do cliente (X-Forwarded-For);
   // senão o rate limit (Throttler) conta todos os usuários como um só.
   app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
@@ -40,7 +41,13 @@ async function bootstrap() {
       subscribe: { fromBeginning: true },
     },
   });
-  app.setGlobalPrefix('finance');
+  // /health fica fora do prefixo: mesmo caminho nos dois serviços.
+  app.setGlobalPrefix("finance", {
+    exclude: [
+      { path: "health/live", method: RequestMethod.GET },
+      { path: "health/ready", method: RequestMethod.GET },
+    ],
+  });
   await ensureKafkaTopics([process.env.KAFKA_URL]);
   await app.startAllMicroservices();
   await app.listen(process.env.PORT ?? 3001);

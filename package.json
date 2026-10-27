@@ -27,6 +27,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/microservices": "^11.1.2",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/terminus": "^10",
     "@nestjs/throttler": "^6.5.0",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",

@@ -51,6 +51,11 @@ export const loggerOptions = (service: string): Params => ({
       res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
     },
 
+    // O Docker chama o /health a cada 10 s; falhas aparecem pelo log do Terminus.
+    autoLogging: {
+      ignore: (req) => req.url?.startsWith("/health") ?? false,
+    },
+
     customLogLevel: (_req, res, error) => {
       if (error || res.statusCode >= 500) return "error";
       if (res.statusCode >= 400) return "warn";
