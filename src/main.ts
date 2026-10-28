@@ -7,14 +7,17 @@ import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { ensureKafkaTopics } from "./infra/kafka/ensure-topics";
 import { Logger } from "nestjs-pino";
 import { requestContextMiddleware } from "./shared/observability/request-context";
+import { configureMetrics, metricsMiddleware } from "./shared/observability/metrics";
 
 async function bootstrap() {
+  configureMetrics("finance-service");
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
   // Primeiro middleware: dá um id a cada requisição antes de qualquer log.
   app.use(requestContextMiddleware);
+  app.use(metricsMiddleware);
   app.enableShutdownHooks();
   // Atrás do Caddy, req.ip precisa ser o IP real do cliente (X-Forwarded-For);
   // senão o rate limit (Throttler) conta todos os usuários como um só.
@@ -41,11 +44,12 @@ async function bootstrap() {
       subscribe: { fromBeginning: true },
     },
   });
-  // /health fica fora do prefixo: mesmo caminho nos dois serviços.
+  // /health e /metrics ficam fora do prefixo: mesmo caminho nos dois serviços.
   app.setGlobalPrefix("finance", {
     exclude: [
       { path: "health/live", method: RequestMethod.GET },
       { path: "health/ready", method: RequestMethod.GET },
+      { path: "metrics", method: RequestMethod.GET },
     ],
   });
   await ensureKafkaTopics([process.env.KAFKA_URL]);

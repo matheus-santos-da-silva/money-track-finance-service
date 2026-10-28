@@ -2,6 +2,10 @@ import { Logger } from "@nestjs/common";
 import { KafkaContext } from "@nestjs/microservices";
 import { getRequestContext } from "src/shared/observability/request-context";
 import {
+  kafkaMessageProcessingDuration,
+  kafkaMessagesConsumedTotal,
+} from "src/infra/kafka/kafka-metrics";
+import {
   CORRELATION_ID_HEADER,
   correlationIdOf,
   runWithMessageContext,
@@ -87,5 +91,31 @@ describe("message context", () => {
       expect.objectContaining({ topic: "user-created" }),
       "Falha ao processar evento: será reentregue",
     );
+  });
+
+  it("should count consumed messages by outcome and time them", async () => {
+    kafkaMessagesConsumedTotal.reset();
+    kafkaMessageProcessingDuration.reset();
+
+    await runWithMessageContext("user-created", contextWith(), async () => "processed");
+    await runWithMessageContext("user-created", contextWith(), async () => "dead-lettered");
+    await runWithMessageContext("user-created", contextWith(), async () => {
+      throw new Error("dlq fora do ar");
+    }).catch(() => undefined);
+
+    const { values } = await kafkaMessagesConsumedTotal.get();
+    expect(values.map(({ labels, value }) => ({ ...labels, value }))).toEqual(
+      expect.arrayContaining([
+        { topic: "user-created", outcome: "processed", value: 1 },
+        { topic: "user-created", outcome: "dead_lettered", value: 1 },
+        { topic: "user-created", outcome: "failed", value: 1 },
+      ]),
+    );
+    const duration = await kafkaMessageProcessingDuration.get();
+    expect(
+      duration.values.find(
+        (v) => v.metricName === "kafka_message_processing_duration_seconds_count",
+      )?.value,
+    ).toBe(3);
   });
 });

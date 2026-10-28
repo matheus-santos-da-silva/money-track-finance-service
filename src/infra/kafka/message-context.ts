@@ -3,6 +3,11 @@ import { Logger } from "@nestjs/common";
 import { KafkaContext } from "@nestjs/microservices";
 import { MessageOutcome } from "./dead-letter/with-retry-and-dlq";
 import {
+  ConsumeOutcome,
+  kafkaMessageProcessingDuration,
+  kafkaMessagesConsumedTotal,
+} from "./kafka-metrics";
+import {
   isValidRequestId,
   runWithContext,
 } from "src/shared/observability/request-context";
@@ -34,9 +39,14 @@ export const runWithMessageContext = (
   return runWithContext({ requestId }, async () => {
     const startedAt = performance.now();
     const durationMs = () => Math.round(performance.now() - startedAt);
+    const record = (outcome: ConsumeOutcome) => {
+      kafkaMessagesConsumedTotal.inc({ topic, outcome });
+      kafkaMessageProcessingDuration.observe({ topic }, durationMs() / 1000);
+    };
 
     try {
       const outcome = await handler();
+      record(outcome === "processed" ? "processed" : "dead_lettered");
 
       if (outcome === "processed") {
         logger.log({ topic, ...position, durationMs: durationMs() }, "Evento processado");
@@ -47,6 +57,7 @@ export const runWithMessageContext = (
         );
       }
     } catch (error) {
+      record("failed");
       // Nem a DLQ aceitou: o erro sobe e o Kafka reentrega a mensagem.
       logger.error(
         { topic, ...position, durationMs: durationMs(), err: error },

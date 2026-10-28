@@ -3,6 +3,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { AuthModule } from "./application/auth/auth.module";
 import { ConsumersModule } from "./infra/kafka/consumers/consumers.module";
 import { HealthControllersModule } from "./presentation/controllers/health/health-controllers.module";
+import { MetricsControllersModule } from "./presentation/controllers/metrics/metrics-controllers.module";
 import { IncomesControllersModule } from "./presentation/controllers/incomes/incomes-controllers.module";
 import { ExpensesControllersModule } from "./presentation/controllers/expenses/expenses-controllers.module";
 import { CategoriesControllersModule } from "./presentation/controllers/categories/categories-controllers.module";
@@ -16,6 +17,7 @@ import { loggerOptions } from "./shared/observability/logger-options";
     LoggerModule.forRoot(loggerOptions("finance-service")),
     ExpensesControllersModule,
     HealthControllersModule,
+    MetricsControllersModule,
     IncomesControllersModule,
     TransactionsControllersModule,
     CategoriesControllersModule,

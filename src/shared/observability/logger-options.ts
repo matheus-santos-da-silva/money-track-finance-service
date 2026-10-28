@@ -51,9 +51,10 @@ export const loggerOptions = (service: string): Params => ({
       res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
     },
 
-    // O Docker chama o /health a cada 10 s; falhas aparecem pelo log do Terminus.
+    // /health (Docker, a cada 10 s) e /metrics (Prometheus, a cada 15 s) só fariam ruído.
     autoLogging: {
-      ignore: (req) => req.url?.startsWith("/health") ?? false,
+      ignore: (req) =>
+        ["/health", "/metrics"].some((path) => req.url?.startsWith(path)),
     },
 
     customLogLevel: (_req, res, error) => {
