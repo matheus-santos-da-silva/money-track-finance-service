@@ -1,5 +1,6 @@
 import { Params } from "nestjs-pino";
 import { getRequestContext } from "./request-context";
+import { isInternalPath } from "./internal-paths";
 
 // Logs de inicialização do Nest (módulos carregados, rotas mapeadas)
 const BOOTSTRAP_CONTEXTS = new Set([
@@ -33,14 +34,10 @@ export const loggerOptions = (service: string): Params => ({
       },
     },
 
-    // Roda em TODO log, inclusive na linha final da requisição: quem está no
-    // contexto da requisição (ou da mensagem do Kafka) ganha requestId e userId sem precisar passar nada adiante.
+    // Roda em todo log da requisição. O trace_id e o span_id vêm da instrumentação do pino (ver tracing.ts).
     mixin: () => {
-      const context = getRequestContext();
-      if (!context) return {};
-      return context.userId
-        ? { requestId: context.requestId, userId: context.userId }
-        : { requestId: context.requestId };
+      const userId = getRequestContext()?.userId;
+      return userId ? { userId } : {};
     },
 
     serializers: {
@@ -51,10 +48,8 @@ export const loggerOptions = (service: string): Params => ({
       res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
     },
 
-    // /health (Docker, a cada 10 s) e /metrics (Prometheus, a cada 15 s) só fariam ruído.
     autoLogging: {
-      ignore: (req) =>
-        ["/health", "/metrics"].some((path) => req.url?.startsWith(path)),
+      ignore: (req) => isInternalPath(req.url),
     },
 
     customLogLevel: (_req, res, error) => {

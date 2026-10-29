@@ -1,4 +1,7 @@
 import { withRetryAndDlq } from "src/infra/kafka/dead-letter/with-retry-and-dlq";
+import { setupInMemoryTracing } from "../../helpers/in-memory-tracing";
+
+const { exporter, tracer } = setupInMemoryTracing();
 
 describe("withRetryAndDlq", () => {
   let deadLetter: { publish: jest.Mock };
@@ -119,5 +122,27 @@ describe("withRetryAndDlq", () => {
     const handler = jest.fn().mockRejectedValue(new Error("permanente"));
 
     await expect(run(handler)).rejects.toThrow("permanente");
+  });
+
+  it("should mark each failed attempt and the DLQ as events of the current span", async () => {
+    exporter.reset();
+    const handler = jest.fn().mockRejectedValue(new Error("permanente"));
+
+    await tracer.startActiveSpan("user-created process", async (span) => {
+      await run(handler);
+      span.end();
+    });
+
+    const [span] = exporter.getFinishedSpans();
+    expect(span.events.map((event) => event.name)).toEqual([
+      "retry",
+      "retry",
+      "retry",
+      "dead_letter",
+    ]);
+    expect(span.events[0].attributes).toEqual({
+      attempt: 1,
+      "error.message": "permanente",
+    });
   });
 });

@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { trace } from "@opentelemetry/api";
 import { isTransientError } from "./is-transient-error";
 
 export interface DeadLetterPublisher {
@@ -21,6 +22,9 @@ interface WithRetryAndDlqOptions {
 const logger = new Logger("KafkaRetry");
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const errorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
 
 // Executa o handler com retry e backoff exponencial, mas só para erros passageiros.
 // Erro permanente, ou esgotadas as tentativas, envia a mensagem para `<topic>.dlq`
@@ -57,12 +61,20 @@ export const withRetryAndDlq = async ({
         { topic, attempt, attempts, err: error },
         "Tentativa de processar o evento falhou",
       );
+      trace.getActiveSpan()?.addEvent("retry", {
+        attempt,
+        "error.message": errorMessage(error),
+      });
       if (attempt < attempts) await sleep(baseDelayMs * 2 ** (attempt - 1));
     }
   }
 
   try {
     await deadLetter.publish(topic, payload, lastError);
+    trace.getActiveSpan()?.addEvent("dead_letter", {
+      "messaging.destination.name": `${topic}.dlq`,
+      "error.message": errorMessage(lastError),
+    });
     logger.error(
       { topic, dlqTopic: `${topic}.dlq`, err: lastError },
       "Mensagem enviada para a DLQ",

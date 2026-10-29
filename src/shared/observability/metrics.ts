@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Histogram, Registry, collectDefaultMetrics } from "prom-client";
+import { isInternalPath } from "./internal-paths";
 
 export const registry = new Registry();
 
@@ -16,8 +17,6 @@ export const httpRequestDuration = new Histogram({
   registers: [registry],
 });
 
-const IGNORED_PATHS = ["/health", "/metrics"];
-
 // Rota-modelo (/finance/expenses/:id), nunca a URL com ids: cada valor de label vira uma série nova.
 // O Nest registra middlewares (o do pino) como rota curinga (/finance/*): se só ela casou, nenhum controller atendeu.
 const routeOf = (req: Request): string => {
@@ -31,7 +30,7 @@ export const metricsMiddleware = (
   res: Response,
   next: NextFunction,
 ): void => {
-  if (IGNORED_PATHS.some((path) => req.path.startsWith(path))) return next();
+  if (isInternalPath(req.path)) return next();
 
   const stopTimer = httpRequestDuration.startTimer();
   res.on("finish", () => {

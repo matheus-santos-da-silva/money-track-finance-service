@@ -6,7 +6,7 @@ import {
   MessagePattern,
   Payload,
 } from "@nestjs/microservices";
-import { runWithMessageContext } from "../message-context";
+import { observeMessage } from "../observe-message";
 import { DeadLetterService } from "../dead-letter/dead-letter.service";
 import { withRetryAndDlq } from "../dead-letter/with-retry-and-dlq";
 import { UsersRepositoryProtocol } from "src/infra/database/repositories/users/protocols/users-repository-protocol";
@@ -28,7 +28,7 @@ export class UserPlanUpdatedConsumer {
     @Payload() message: UserPlanUpdatedPayload,
     @Ctx() context?: KafkaContext,
   ): Promise<void> {
-    await runWithMessageContext("user-plan-updated", context, () =>
+    await observeMessage("user-plan-updated", context, () =>
       withRetryAndDlq({
         topic: "user-plan-updated",
         payload: message,

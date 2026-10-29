@@ -1,22 +1,16 @@
-import { randomUUID } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { trace } from "@opentelemetry/api";
 import { NextFunction, Request, Response } from "express";
 
-// Dados de quem originou o trabalho em andamento: uma requisição HTTP ou uma mensagem do Kafka
+// Quem originou a requisição. O id da requisição é o trace_id do OpenTelemetry.
 export interface RequestContext {
-  requestId: string;
   userId?: string;
 }
 
+// Devolve o trace_id ao cliente: é o id para buscar a requisição no Grafana e nos logs.
 export const REQUEST_ID_HEADER = "x-request-id";
 
-export const isValidRequestId = (value: string): boolean =>
-  /^[A-Za-z0-9._-]{1,100}$/.test(value);
-
 const storage = new AsyncLocalStorage<RequestContext>();
-
-export const runWithContext = <T>(context: RequestContext, fn: () => T): T =>
-  storage.run(context, fn);
 
 export const getRequestContext = (): RequestContext | undefined =>
   storage.getStore();
@@ -24,19 +18,16 @@ export const getRequestContext = (): RequestContext | undefined =>
 export const setUserId = (userId: string): void => {
   const context = storage.getStore();
   if (context) context.userId = userId;
+  trace.getActiveSpan()?.setAttribute("enduser.id", userId);
 };
 
 export const requestContextMiddleware = (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
 ): void => {
-  const received = req.header(REQUEST_ID_HEADER)?.trim();
-  const requestId =
-    received && isValidRequestId(received) ? received : randomUUID();
+  const traceId = trace.getActiveSpan()?.spanContext().traceId;
+  if (traceId) res.setHeader(REQUEST_ID_HEADER, traceId);
 
-  (req as Request & { id: string }).id = requestId;
-  res.setHeader(REQUEST_ID_HEADER, requestId);
-
-  runWithContext({ requestId }, next);
+  storage.run({}, next);
 };
