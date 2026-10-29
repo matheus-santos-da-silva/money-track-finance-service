@@ -1,4 +1,5 @@
-import "dotenv/config";
+// Primeiro import: o tracing precisa instrumentar http, express, pg e kafkajs antes de eles serem carregados.
+import "./instrument";
 import { AppModule } from "./app.module";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
@@ -15,7 +16,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
-  // Primeiro middleware: dá um id a cada requisição antes de qualquer log.
+  // Primeiro middleware: devolve o trace_id no x-request-id e abre o contexto do usuário para os logs.
   app.use(requestContextMiddleware);
   app.use(metricsMiddleware);
   app.enableShutdownHooks();
