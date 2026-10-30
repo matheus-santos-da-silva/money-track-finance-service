@@ -2,15 +2,11 @@ import { Logger } from "@nestjs/common";
 import { KafkaContext } from "@nestjs/microservices";
 import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { MessageOutcome } from "./dead-letter/with-retry-and-dlq";
-import {
-  ConsumeOutcome,
-  kafkaMessageProcessingDuration,
-  kafkaMessagesConsumedTotal,
-} from "./kafka-metrics";
+import { ConsumeOutcome, kafkaMessagesHandledTotal } from "./kafka-metrics";
 
 const logger = new Logger("KafkaConsumer");
 
-// Mede, loga e marca no span o resultado de um evento. O span do consumer (com o trace de quem publicou)
+// Conta, loga e marca no span o resultado de um evento. O span do consumer (com o trace de quem publicou)
 // é aberto pela instrumentação do kafkajs a partir do header traceparent.
 export const observeMessage = async (
   topic: string,
@@ -25,8 +21,7 @@ export const observeMessage = async (
   const durationMs = () => Math.round(performance.now() - startedAt);
 
   const record = (outcome: ConsumeOutcome) => {
-    kafkaMessagesConsumedTotal.inc({ topic, outcome });
-    kafkaMessageProcessingDuration.observe({ topic }, durationMs() / 1000);
+    kafkaMessagesHandledTotal.add(1, { "messaging.destination.name": topic, outcome });
     span?.setAttribute("messaging.outcome", outcome);
     if (outcome !== "processed") {
       span?.setStatus({ code: SpanStatusCode.ERROR, message: outcome });

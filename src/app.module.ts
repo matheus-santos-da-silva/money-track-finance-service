@@ -3,7 +3,6 @@ import { APP_GUARD } from "@nestjs/core";
 import { AuthModule } from "./application/auth/auth.module";
 import { ConsumersModule } from "./infra/kafka/consumers/consumers.module";
 import { HealthControllersModule } from "./presentation/controllers/health/health-controllers.module";
-import { MetricsControllersModule } from "./presentation/controllers/metrics/metrics-controllers.module";
 import { IncomesControllersModule } from "./presentation/controllers/incomes/incomes-controllers.module";
 import { ExpensesControllersModule } from "./presentation/controllers/expenses/expenses-controllers.module";
 import { CategoriesControllersModule } from "./presentation/controllers/categories/categories-controllers.module";
@@ -11,14 +10,13 @@ import { TransactionsControllersModule } from "./presentation/controllers/transa
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { LoggerModule } from "nestjs-pino";
 import { loggerOptions } from "./shared/observability/logger-options";
-import { shutdownTracing } from "./shared/observability/tracing";
+import { shutdownTelemetry } from "./shared/observability/telemetry";
 
 @Module({
   imports: [
     LoggerModule.forRoot(loggerOptions("finance-service")),
     ExpensesControllersModule,
     HealthControllersModule,
-    MetricsControllersModule,
     IncomesControllersModule,
     TransactionsControllersModule,
     CategoriesControllersModule,
@@ -39,8 +37,8 @@ import { shutdownTracing } from "./shared/observability/tracing";
   ],
 })
 export class AppModule implements OnApplicationShutdown {
-  // Envia os spans que ainda estão no buffer antes de o processo sair.
+  // Envia os spans e as métricas que ainda estão no buffer antes de o processo sair.
   onApplicationShutdown(): Promise<void> {
-    return shutdownTracing();
+    return shutdownTelemetry();
   }
 }
