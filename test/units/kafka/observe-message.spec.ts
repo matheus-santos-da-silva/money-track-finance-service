@@ -4,10 +4,7 @@ import { SpanStatusCode } from "@opentelemetry/api";
 import { observeMessage } from "src/infra/kafka/observe-message";
 import { MessageOutcome } from "src/infra/kafka/dead-letter/with-retry-and-dlq";
 import { setupInMemoryTracing } from "../../helpers/in-memory-tracing";
-import {
-  kafkaMessageProcessingDuration,
-  kafkaMessagesConsumedTotal,
-} from "src/infra/kafka/kafka-metrics";
+import { counterValue } from "../../helpers/in-memory-metrics";
 
 const { exporter, tracer } = setupInMemoryTracing();
 
@@ -85,29 +82,23 @@ describe("observeMessage", () => {
     expect(lastSpan()?.status.code).toBe(SpanStatusCode.ERROR);
   });
 
-  it("should count consumed messages by outcome and time them", async () => {
-    kafkaMessagesConsumedTotal.reset();
-    kafkaMessageProcessingDuration.reset();
+  it("should count handled messages by topic and outcome", async () => {
+    // Tópico só deste teste: os contadores acumulam entre os testes do arquivo.
+    const topic = "user-plan-updated";
+    const handled = (outcome: string) =>
+      counterValue("money_track.kafka.messages.handled", {
+        "messaging.destination.name": topic,
+        outcome,
+      });
 
-    await observeMessage("user-created", contextWith(), async () => "processed");
-    await observeMessage("user-created", contextWith(), async () => "dead-lettered");
-    await observeMessage("user-created", contextWith(), async () => {
+    await observeMessage(topic, contextWith(), async () => "processed");
+    await observeMessage(topic, contextWith(), async () => "dead-lettered");
+    await observeMessage(topic, contextWith(), async () => {
       throw new Error("dlq fora do ar");
     }).catch(() => undefined);
 
-    const { values } = await kafkaMessagesConsumedTotal.get();
-    expect(values.map(({ labels, value }) => ({ ...labels, value }))).toEqual(
-      expect.arrayContaining([
-        { topic: "user-created", outcome: "processed", value: 1 },
-        { topic: "user-created", outcome: "dead_lettered", value: 1 },
-        { topic: "user-created", outcome: "failed", value: 1 },
-      ]),
-    );
-    const duration = await kafkaMessageProcessingDuration.get();
-    expect(
-      duration.values.find(
-        (v) => v.metricName === "kafka_message_processing_duration_seconds_count",
-      )?.value,
-    ).toBe(3);
+    expect(await handled("processed")).toBe(1);
+    expect(await handled("dead_lettered")).toBe(1);
+    expect(await handled("failed")).toBe(1);
   });
 });
