@@ -31,8 +31,8 @@ const instrumentations = () => [
   }),
   new ExpressInstrumentation({
     ignoreLayersType: [ExpressLayerType.MIDDLEWARE],
-    // O Nest registra middlewares (o do pino) como rota curinga (/*, /finance/*): não são rotas de verdade.
-    ignoreLayers: [/\*$/],
+    // O Nest registra middlewares (o do pino) como rota curinga (/{*path}, /finance/{*path}): não são rotas de verdade.
+    ignoreLayers: [/\{\*path\}$/],
   }),
   new NestInstrumentation(),
   // Sem pai, a query é o SELECT 1 do health check: não vira um trace solto.

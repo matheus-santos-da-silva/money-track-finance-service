@@ -1,3 +1,4 @@
+import { RequestMethod } from "@nestjs/common";
 import { Params } from "nestjs-pino";
 import { getRequestContext } from "./request-context";
 import { isInternalPath } from "./internal-paths";
@@ -12,6 +13,9 @@ const BOOTSTRAP_CONTEXTS = new Set([
 const INFO_LEVEL = 30;
 
 export const loggerOptions = (service: string): Params => ({
+  // Sintaxe de curinga do Express 5; o padrão do nestjs-pino ("*") gera aviso a cada boot.
+  forRoutes: [{ path: "{*path}", method: RequestMethod.ALL }],
+
   pinoHttp: {
     level: process.env.LOG_LEVEL ?? "info",
 
@@ -34,7 +38,7 @@ export const loggerOptions = (service: string): Params => ({
       },
     },
 
-    // Roda em todo log da requisição. O trace_id e o span_id vêm da instrumentação do pino (ver tracing.ts).
+    // Roda em todo log da requisição. O trace_id e o span_id vêm da instrumentação do pino (ver telemetry.ts).
     mixin: () => {
       const userId = getRequestContext()?.userId;
       return userId ? { userId } : {};
