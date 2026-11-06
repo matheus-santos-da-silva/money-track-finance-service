@@ -3,7 +3,7 @@ import { Logger } from "@nestjs/common";
 
 const logger = new Logger("KafkaTopics");
 
-const EVENT_TOPICS = ["user-created", "user-plan-updated", "user-deleted"];
+export const EVENT_TOPICS = ["user-created", "user-plan-updated", "user-deleted"];
 
 // Cada tópico de evento tem uma DLQ (`<tópico>.dlq`) para mensagens que falharam.
 export const KAFKA_TOPICS = [
