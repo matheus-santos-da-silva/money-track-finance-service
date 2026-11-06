@@ -1,6 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { KafkaContext } from "@nestjs/microservices";
 import { SpanStatusCode } from "@opentelemetry/api";
+import { EVENT_TOPICS } from "src/infra/kafka/ensure-topics";
 import { observeMessage } from "src/infra/kafka/observe-message";
 import { MessageOutcome } from "src/infra/kafka/dead-letter/with-retry-and-dlq";
 import { setupInMemoryTracing } from "../../helpers/in-memory-tracing";
@@ -30,6 +31,20 @@ const lastSpan = () => exporter.getFinishedSpans().at(-1);
 describe("observeMessage", () => {
   beforeEach(() => exporter.reset());
   afterEach(() => jest.restoreAllMocks());
+
+  // Primeiro do arquivo: nenhuma mensagem foi tratada ainda.
+  it("should start every topic and outcome series at zero", async () => {
+    for (const topic of EVENT_TOPICS) {
+      for (const outcome of ["processed", "dead_lettered", "failed"]) {
+        expect(
+          await counterValue("money_track.kafka.messages.handled", {
+            "messaging.destination.name": topic,
+            outcome,
+          }),
+        ).toBe(0);
+      }
+    }
+  });
 
   it("should log the outcome of the event", async () => {
     const log = jest.spyOn(Logger.prototype, "log");

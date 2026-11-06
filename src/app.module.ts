@@ -37,7 +37,7 @@ import { shutdownTelemetry } from "./shared/observability/telemetry";
   ],
 })
 export class AppModule implements OnApplicationShutdown {
-  // Envia os spans e as métricas que ainda estão no buffer antes de o processo sair.
+  // Envia os spans, as métricas e os logs que ainda estão no buffer antes de o processo sair.
   onApplicationShutdown(): Promise<void> {
     return shutdownTelemetry();
   }

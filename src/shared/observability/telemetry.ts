@@ -1,6 +1,7 @@
-import { context, metrics, propagation, trace } from "@opentelemetry/api";
+import { context, logs, metrics, propagation, trace } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
+import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
@@ -15,6 +16,7 @@ import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { RuntimeNodeInstrumentation } from "@opentelemetry/instrumentation-runtime-node";
 import { resourceFromAttributes } from "@opentelemetry/resources";
+import { BatchLogRecordProcessor, LoggerProvider } from "@opentelemetry/sdk-logs";
 import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { BatchSpanProcessor, TracerProvider } from "@opentelemetry/sdk-trace";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
@@ -24,8 +26,9 @@ const METRICS_EXPORT_INTERVAL_MS = 15_000;
 
 let tracerProvider: TracerProvider | undefined;
 let meterProvider: MeterProvider | undefined;
+let loggerProvider: LoggerProvider | undefined;
 
-const instrumentations = () => [
+const instrumentations = (exporting: boolean) => [
   new HttpInstrumentation({
     ignoreIncomingRequestHook: (req) => isInternalPath(req.url),
   }),
@@ -38,7 +41,8 @@ const instrumentations = () => [
   // Sem pai, a query é o SELECT 1 do health check: não vira um trace solto.
   new PgInstrumentation({ requireParentSpan: true }),
   new KafkaJsInstrumentation(),
-  new PinoInstrumentation({ disableLogSending: true }),
+  // Enviando, cada log vai ao stdout e ao OTel, já serializado (mesmos campos do stdout).
+  new PinoInstrumentation({ disableLogSending: !exporting }),
   new RuntimeNodeInstrumentation(),
 ];
 
@@ -48,7 +52,7 @@ export const startTelemetry = (service: string): void => {
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
   const resource = resourceFromAttributes({ [ATTR_SERVICE_NAME]: service });
 
-  // Sem endpoint, traces e métricas existem (o trace_id vai para logs e headers), mas não saem do processo.
+  // Sem endpoint, traces e métricas existem (o trace_id vai para logs e headers), mas nada sai do processo.
   tracerProvider = new TracerProvider({
     resource,
     spanProcessors: endpoint
@@ -66,14 +70,25 @@ export const startTelemetry = (service: string): void => {
         ]
       : [],
   });
+  loggerProvider = new LoggerProvider({
+    resource,
+    processors: endpoint
+      ? [new BatchLogRecordProcessor({ exporter: new OTLPLogExporter() })]
+      : [],
+  });
 
   trace.setGlobalTracerProvider(tracerProvider);
   metrics.setGlobalMeterProvider(meterProvider);
+  logs.setGlobalLoggerProvider(loggerProvider);
   context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
   propagation.setGlobalPropagator(new W3CTraceContextPropagator());
-  registerInstrumentations({ instrumentations: instrumentations() });
+  registerInstrumentations({ instrumentations: instrumentations(Boolean(endpoint)) });
 };
 
 export const shutdownTelemetry = async (): Promise<void> => {
-  await Promise.all([tracerProvider?.shutdown(), meterProvider?.shutdown()]);
+  await Promise.all([
+    tracerProvider?.shutdown(),
+    meterProvider?.shutdown(),
+    loggerProvider?.shutdown(),
+  ]);
 };
